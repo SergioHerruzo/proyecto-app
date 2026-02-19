@@ -1,0 +1,24 @@
+{
+  "name": "@indiegames-app/shared",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "packageManager": "pnpm@10.28.1",
+  "peerDependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@aws-amplify/auth": "^6.18.0",
+    "aws-amplify": "^6.16.0"
+  }
+}
