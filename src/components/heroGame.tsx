@@ -1,3 +1,4 @@
+import '../styles/HeroGame.css'
 import type { Game } from "../types/games"
 
 interface HeroGameProps {

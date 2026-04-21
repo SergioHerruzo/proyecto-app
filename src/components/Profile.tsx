@@ -1,3 +1,4 @@
+import '../styles/Profile.css'
 import { useState } from "react"
 import type { AuthUser } from "../services/auth"
 

@@ -1,3 +1,4 @@
+import '../styles/GameCard.css'
 import type { Game } from "../types/games"
 
 interface GameCardProps {

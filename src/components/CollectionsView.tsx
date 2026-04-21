@@ -1,3 +1,4 @@
+import '../styles/Library.css'
 import type { Collection } from "../types/games"
 
 interface CollectionsViewProps {

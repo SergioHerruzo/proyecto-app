@@ -1,3 +1,5 @@
+import '../styles/Header.css'
+
 type Page = "home" | "library" | "cart" | "profile"
 
 interface HeaderProps {

@@ -1,0 +1,90 @@
+.game-card {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.game-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.game-card-image {
+  width: 100%;
+  height: 110px;
+  background-color: #3a3a3a;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.game-card--recommended .game-card-image {
+  height: 130px;
+}
+
+.cart-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(30, 30, 30, 0.85);
+  border: 1px solid #444;
+  color: #ccc;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.cart-btn:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+.platform-icon {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  color: #555;
+  display: flex;
+  align-items: center;
+}
+
+.game-card-info {
+  padding: 10px 12px 12px;
+}
+
+.game-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-card-genres {
+  font-size: 11px;
+  color: #888;
+  margin: 0 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-card-prices {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-current {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e0e0;
+}

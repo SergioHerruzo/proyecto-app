@@ -1,3 +1,4 @@
+import '../styles/GameDetail.css'
 import { useState } from "react"
 import type { Game } from "../types/games"
 

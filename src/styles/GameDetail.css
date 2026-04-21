@@ -1,0 +1,386 @@
+.game-detail-wrapper {
+  width: 100%;
+  background-color: #1b1b1b;
+}
+
+.game-detail-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+.game-detail-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.breadcrumb-btn {
+  background: transparent;
+  border: none;
+  color: #6bb8e8;
+  font-size: 12px;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.breadcrumb-btn:hover { color: #9dd3f5; }
+
+.breadcrumb-sep { color: #555; }
+
+.breadcrumb-item { color: #6bb8e8; }
+
+.breadcrumb-item--current { color: #aaa; }
+
+.game-detail-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 20px;
+}
+
+.game-detail-body {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* LEFT */
+.game-detail-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detail-carousel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #000;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.detail-carousel-arrow {
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: #fff;
+  font-size: 28px;
+  width: 40px;
+  height: 100%;
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.detail-carousel-arrow:hover:not(:disabled) { background: rgba(0,0,0,0.8); }
+.detail-carousel-arrow:disabled { opacity: 0.2; cursor: not-allowed; }
+
+.detail-carousel-main {
+  flex: 1;
+  height: 280px;
+  background-color: #111;
+  background-size: cover;
+  background-position: center;
+}
+
+.detail-thumbnails {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.detail-thumb {
+  width: 90px;
+  height: 54px;
+  border-radius: 3px;
+  border: 2px solid transparent;
+  background-color: #2a2a2a;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s;
+}
+
+.detail-thumb--active { border-color: #6bb8e8; }
+.detail-thumb:hover:not(.detail-thumb--active) { border-color: #555; }
+
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-action-wishlist {
+  background-color: #4a6fa5;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.detail-action-wishlist:hover { background-color: #5a80b5; }
+.detail-action-wishlist--active { background-color: #2d5080; }
+
+.detail-action-btn {
+  background-color: #3a3a3a;
+  border: 1px solid #4a4a4a;
+  color: #ccc;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.detail-action-btn:hover { background-color: #4a4a4a; }
+
+.detail-purchase {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.detail-purchase-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  flex-wrap: wrap;
+}
+
+.detail-purchase-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.detail-purchase-price-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-discount-badge {
+  background-color: #4c6b22;
+  color: #a4d007;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 3px;
+}
+
+.detail-purchase-prices {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.detail-new-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.detail-buy-btn {
+  background-color: #4c6b22;
+  color: #a4d007;
+  border: none;
+  border-radius: 4px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.detail-buy-btn:hover { background-color: #5a7f28; }
+.detail-buy-btn--in-cart {
+  background-color: #2a3a1a;
+  color: #6a9a30;
+  cursor: default;
+}
+
+.detail-friends {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+
+.detail-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #aaa;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-friends-list {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.detail-friend-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-friend-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  background-color: #3a3a3a;
+}
+
+.detail-friend-name {
+  font-size: 11px;
+  color: #6bb8e8;
+}
+
+/* RIGHT */
+.game-detail-right {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detail-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #2a2a2a;
+  background-size: cover;
+  background-position: center;
+  border-radius: 6px;
+}
+
+.detail-description {
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #2d2d2d;
+  padding-top: 12px;
+}
+
+.detail-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-meta-label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-meta-value { font-size: 12px; color: #ccc; }
+.detail-meta-positive { font-size: 12px; color: #6bb8e8; }
+.detail-meta-link { font-size: 12px; color: #6bb8e8; cursor: pointer; }
+.detail-meta-link:hover { text-decoration: underline; }
+
+.detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.detail-tag {
+  background-color: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  color: #aaa;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.detail-tag:hover { border-color: #6bb8e8; color: #6bb8e8; }
+
+/* Similar games */
+.detail-similar {
+  margin-top: 32px;
+  border-top: 1px solid #2d2d2d;
+  padding-top: 24px;
+}
+
+.detail-similar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.detail-similar-card {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.detail-similar-card:hover { transform: translateY(-3px); }
+
+.detail-similar-image {
+  width: 100%;
+  height: 90px;
+  background-color: #3a3a3a;
+  background-size: cover;
+  background-position: center;
+}
+
+.detail-similar-info {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-similar-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail-similar-genres {
+  font-size: 11px;
+  color: #777;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

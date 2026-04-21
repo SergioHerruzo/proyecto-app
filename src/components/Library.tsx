@@ -1,3 +1,4 @@
+import '../styles/Library.css'
 import { useState } from "react"
 import LibrarySidebar from "./LibrarySidebar"
 import CollectionsView from "./CollectionsView"

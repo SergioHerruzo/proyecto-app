@@ -1,3 +1,4 @@
+import '../styles/Library.css'
 import type { Game } from "../types/games"
 
 interface LibrarySidebarProps {

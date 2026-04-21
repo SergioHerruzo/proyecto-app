@@ -1,3 +1,4 @@
+import '../styles/Cart.css'
 import type { Game } from "../types/games"
 
 interface CartProps {

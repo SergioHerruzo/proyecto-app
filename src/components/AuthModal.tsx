@@ -1,3 +1,4 @@
+import '../styles/AuthModal.css'
 import { useState } from "react"
 import { login, register, confirmRegister, resendConfirmationCode } from "../services/auth"
 import type { AuthUser } from "../services/auth"
