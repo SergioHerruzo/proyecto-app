@@ -1,104 +1,263 @@
-const BASE_URL = "http://192.168.17.17:5082"
+const BASE_URL = "http://192.168.17.17:5239"
+
+// --- Auth token ---
+
+let authToken: string | null = null
+
+export function setAuthToken(token: string | null) {
+  authToken = token
+}
+
+export function getAuthToken(): string | null {
+  return authToken
+}
+
+function authHeaders(): HeadersInit {
+  return authToken ? { Authorization: `Bearer ${authToken}` } : {}
+}
 
 // --- API response types ---
 
-export interface ApiGenre {
-  id: number
-  name: string
-}
-
-export interface ApiUser {
-  id: number
+export interface UserSummary {
+  id: string
   username: string
 }
 
-export interface ApiGame {
-  id: number
+export interface GenreSummary {
+  id: string
+  name: string
+}
+
+export interface GameArtworkSummary {
+  smallImageUrl: string
+  mediumImageUrl: string
+  largeImageUrl: string
+}
+
+export interface GameStorePictureSummary {
+  smallImageUrl: string
+  mediumImageUrl: string
+  largeImageUrl: string
+}
+
+export interface GameListItemResponse {
+  id: string
+  title: string
+  price: number
+  discount: number
+}
+
+export interface GameResponse {
+  id: string
   title: string
   description: string
-  releaseDate: string
-  genres: ApiGenre[]
-  developers: ApiUser[]
+  price: number
+  discount: number
+  owner: UserSummary
+  genres: GenreSummary[]
+  artworks: GameArtworkSummary[]
+  storePictures: GameStorePictureSummary[]
 }
 
-export interface GamesPage {
-  items: ApiGame[]
-  nextTitle: string | null
-  nextId: number | null
+export interface GameSummary {
+  id: string
+  title: string
+  description: string
+  genres: GenreSummary[]
+  storePictures: GameStorePictureSummary[]
+  artworks: GameArtworkSummary[]
 }
 
-export interface GenresPage {
-  items: ApiGenre[]
-  nextName: string | null
-  nextId: number | null
+export interface GenreListItemResponse {
+  id: string
+  name: string
 }
 
-// --- Mapper ---
+export interface PaginatedResponse<T> {
+  items: T[]
+  pageNumber: number
+  pageSize: number
+  pageCount: number
+  totalItemCount: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+}
+
+export interface ApiResult<T> {
+  value: T
+  isSuccess: boolean
+  status: number
+  errors?: string[] | null
+}
+
+export interface GetUserCartResponse {
+  game: GameSummary[]
+}
+
+// --- Request types ---
+
+export interface UpdateGameRequest {
+  title: string
+  description: string
+  price: number
+  discount: number
+  isPublic: boolean
+  releaseBuildId: string
+}
+
+// --- Mappers ---
 
 import type { Game } from "../types/games"
 
-export function mapApiGame(apiGame: ApiGame): Game {
+export function mapApiGameListItem(item: GameListItemResponse): Game {
   return {
-    id: apiGame.id,
-    title: apiGame.title,
-    description: apiGame.description,
-    releaseDate: new Date(apiGame.releaseDate).toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }),
-    genres: apiGame.genres.map(g => g.name),
-    developer: apiGame.developers.map(d => d.username).join(", ") || undefined,
-    image: `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(apiGame.title)}`,
+    id: item.id,
+    title: item.title,
+    price: item.price,
+    discount: item.discount > 0 ? item.discount : undefined,
+    oldPrice: item.discount > 0 ? item.price + item.discount : undefined,
+    genres: [],
+    image: `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(item.title)}`,
   }
 }
 
-// --- API functions ---
+export function mapApiGame(game: GameResponse): Game {
+  const storePic = game.storePictures?.[0]
+  const artworks = game.artworks ?? []
 
-export async function searchGamesByName(
-  name = "",
-  pageSize = 20,
-  normalizedName?: string,
-  referenceId?: number,
-): Promise<GamesPage> {
-  const params = new URLSearchParams()
-  params.set("Name", name)
-  params.set("PageSize", String(pageSize))
-  if (normalizedName !== undefined) params.set("NormalizedName", normalizedName)
-  if (referenceId !== undefined) params.set("ReferenceId", String(referenceId))
-
-  const res = await fetch(`${BASE_URL}/games/search/by-name?${params}`)
-  if (!res.ok) throw new Error(`Error ${res.status}`)
-  return res.json()
+  return {
+    id: game.id,
+    title: game.title,
+    description: game.description,
+    price: game.price,
+    discount: game.discount > 0 ? game.discount : undefined,
+    oldPrice: game.discount > 0 ? game.price + game.discount : undefined,
+    genres: game.genres?.map(g => g.name) ?? [],
+    developer: game.owner?.username,
+    image: storePic?.mediumImageUrl
+      ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(game.title)}`,
+    screenshots: artworks.length > 0 ? artworks.map(a => a.largeImageUrl) : undefined,
+  }
 }
 
-export async function getGameById(id: number): Promise<ApiGame> {
+export function mapGameSummary(g: GameSummary): Game {
+  const storePic = g.storePictures?.[0]
+  const artworks = g.artworks ?? []
+  return {
+    id: g.id,
+    title: g.title,
+    description: g.description,
+    genres: g.genres?.map(x => x.name) ?? [],
+    image: storePic?.mediumImageUrl
+      ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(g.title)}`,
+    screenshots: artworks.length > 0 ? artworks.map(a => a.largeImageUrl) : undefined,
+  }
+}
+
+// --- Games API ---
+
+export async function getGames(
+  title = "",
+  genres: string[] = [],
+  pageNumber = 1,
+  pageSize = 20,
+): Promise<PaginatedResponse<GameListItemResponse>> {
+  const params = new URLSearchParams()
+  if (title) params.set("Title", title)
+  genres.forEach(id => params.append("Genres", id))
+  params.set("PageNumber", String(pageNumber))
+  params.set("PageSize", String(pageSize))
+
+  const res = await fetch(`${BASE_URL}/games?${params}`)
+  if (!res.ok) {
+    const body = await res.text().catch(() => "")
+    console.error(`[API] GET /games → ${res.status}`, body)
+    throw new Error(`Error ${res.status}`)
+  }
+  const data = await res.json()
+  console.log("[API] GET /games →", data)
+  return data
+}
+
+export async function getGameById(id: string): Promise<GameResponse> {
   const res = await fetch(`${BASE_URL}/games/${id}`)
   if (!res.ok) throw new Error(`Error ${res.status}`)
-  return res.json()
+  const result: ApiResult<GameResponse> = await res.json()
+  return result.value
 }
 
-export async function getGamesByGenres(
-  genreIds: number[],
-  pageSize = 20,
-  referenceId?: number,
-): Promise<GamesPage> {
-  const params = new URLSearchParams()
-  genreIds.forEach(id => params.append("GenreIds", String(id)))
-  params.set("PageSize", String(pageSize))
-  if (referenceId !== undefined) params.set("ReferenceId", String(referenceId))
+export async function deleteGame(id: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/games/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+}
 
-  const res = await fetch(`${BASE_URL}/games/filter/by-genres?${params}`)
+// --- Genres API ---
+
+export async function getGenres(
+  name = "",
+  pageNumber = 1,
+  pageSize = 50,
+): Promise<PaginatedResponse<GenreListItemResponse>> {
+  const params = new URLSearchParams()
+  if (name) params.set("Name", name)
+  params.set("PageNumber", String(pageNumber))
+  params.set("PageSize", String(pageSize))
+
+  const res = await fetch(`${BASE_URL}/genres?${params}`)
   if (!res.ok) throw new Error(`Error ${res.status}`)
   return res.json()
 }
 
-export async function getGenresByName(name: string, pageSize = 20): Promise<GenresPage> {
-  const params = new URLSearchParams()
-  params.set("Name", name)
-  params.set("PageSize", String(pageSize))
+// --- Cart API ---
 
-  const res = await fetch(`${BASE_URL}/genres/name?${params}`)
+export async function getCart(): Promise<GetUserCartResponse> {
+  const res = await fetch(`${BASE_URL}/users/me/cart`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  const result: ApiResult<GetUserCartResponse> = await res.json()
+  return result.value
+}
+
+export async function addToCart(gameId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/users/me/cart/${gameId}`, {
+    method: "POST",
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+}
+
+export async function removeFromCart(gameId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/users/me/cart/${gameId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+}
+
+// --- User Collections API ---
+
+export interface GameCollectionListItemResponse {
+  id: string
+  name: string
+  gamesCount: number
+  previewSmallPictureUrls: string[]
+  createdAt: string
+}
+
+export async function getUserCollections(
+  pageNumber = 1,
+  pageSize = 20,
+): Promise<PaginatedResponse<GameCollectionListItemResponse>> {
+  const params = new URLSearchParams()
+  params.set("PageNumber", String(pageNumber))
+  params.set("PageSize", String(pageSize))
+  const res = await fetch(`${BASE_URL}/users/me/collections?${params}`, {
+    headers: authHeaders(),
+  })
   if (!res.ok) throw new Error(`Error ${res.status}`)
   return res.json()
 }

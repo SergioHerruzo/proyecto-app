@@ -1,20 +1,32 @@
-import logo from "../img/IndieGames_logo_dark.png"
-
 type Page = "home" | "library" | "cart" | "profile"
 
 interface HeaderProps {
   activePage?: Page
   onNavigate?: (page: Page) => void
   cartCount?: number
+  isAuthenticated?: boolean
+  username?: string
   onSignIn?: () => void
   onRegister?: () => void
+  onSignOut?: () => void
 }
 
-export default function Header({ activePage = "home", onNavigate, cartCount = 0, onSignIn, onRegister }: HeaderProps) {
+export default function Header({
+  activePage = "home",
+  onNavigate,
+  cartCount = 0,
+  isAuthenticated = false,
+  username,
+  onSignIn,
+  onRegister,
+  onSignOut,
+}: HeaderProps) {
   return (
     <header className="header">
       <div className="logo-badge">
-        <img className="logo-icon" src={logo} alt="Logo" />
+        <span style={{ color: "#fff", fontWeight: "bold", fontSize: "1.3rem", letterSpacing: "0.02em" }}>
+          IndieGames
+        </span>
       </div>
 
       <nav className="nav">
@@ -49,8 +61,17 @@ export default function Header({ activePage = "home", onNavigate, cartCount = 0,
       </nav>
 
       <div className="auth-buttons">
-        <button className="btn-outline" onClick={onSignIn}>Sign in</button>
-        <button className="btn-primary" onClick={onRegister}>Register</button>
+        {isAuthenticated ? (
+          <>
+            <span className="auth-username">{username}</span>
+            <button className="btn-outline" onClick={onSignOut}>Sign out</button>
+          </>
+        ) : (
+          <>
+            <button className="btn-outline" onClick={onSignIn}>Sign in</button>
+            <button className="btn-primary" onClick={onRegister}>Register</button>
+          </>
+        )}
       </div>
     </header>
   )

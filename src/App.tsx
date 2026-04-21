@@ -9,16 +9,29 @@ import Profile from "./components/Profile"
 import AuthModal from "./components/AuthModal"
 import GameDetail from "./components/GameDetail"
 import type { Game } from "./types/games"
-import { searchGamesByName, mapApiGame } from "./services/api"
+import {
+  getGames,
+  getGameById,
+  mapApiGameListItem,
+  mapApiGame,
+  mapGameSummary,
+  setAuthToken,
+  getCart,
+  addToCart,
+  removeFromCart,
+} from "./services/api"
+import { restoreSession, logout } from "./services/auth"
+import type { AuthUser } from "./services/auth"
 
 type Page = "home" | "library" | "cart" | "profile"
-type AuthMode = "signin" | "register"
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home")
   const [cartItems, setCartItems] = useState<Game[]>([])
-  const [authMode, setAuthMode] = useState<AuthMode | null>(null)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<"signin" | "register">("signin")
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null)
 
   const [allGames, setAllGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
@@ -28,12 +41,48 @@ function App() {
   const [searchResults, setSearchResults] = useState<Game[] | null>(null)
   const [searching, setSearching] = useState(false)
 
+  const loadCartFromApi = async () => {
+    try {
+      const cart = await getCart()
+      if (cart.game.length > 0) {
+        setCartItems(cart.game.map(mapGameSummary))
+      }
+    } catch {
+      // cart load failure is non-critical
+    }
+  }
+
+  // Restore Cognito session on load
   useEffect(() => {
-    searchGamesByName("", 20)
-      .then(page => setAllGames(page.items.map(mapApiGame)))
+    restoreSession().then(user => {
+      if (user) {
+        setAuthUser(user)
+        setAuthToken(user.accessToken)
+        loadCartFromApi()
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    getGames("", [], 1, 20)
+      .then(page => setAllGames(page.items.map(mapApiGameListItem)))
       .catch(() => setError("No se pudieron cargar los juegos."))
       .finally(() => setLoading(false))
   }, [])
+
+  const handleAuthSuccess = async (user: AuthUser) => {
+    setAuthUser(user)
+    setAuthToken(user.accessToken)
+    setAuthModalOpen(false)
+    await loadCartFromApi()
+  }
+
+  const handleSignOut = () => {
+    logout()
+    setAuthUser(null)
+    setAuthToken(null)
+    setCartItems([])
+  }
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -42,8 +91,8 @@ function App() {
     }
     setSearching(true)
     try {
-      const page = await searchGamesByName(query, 20)
-      setSearchResults(page.items.map(mapApiGame))
+      const page = await getGames(query, [], 1, 20)
+      setSearchResults(page.items.map(mapApiGameListItem))
     } catch {
       setSearchResults([])
     } finally {
@@ -56,12 +105,29 @@ function App() {
     if (!value.trim()) setSearchResults(null)
   }
 
-  const handleAddToCart = (game: Game) => {
-    setCartItems(prev => prev.find(g => g.id === game.id) ? prev : [...prev, game])
+  const handleSelectGame = async (game: Game) => {
+    setSelectedGame(game)
+    try {
+      const detail = await getGameById(game.id)
+      setSelectedGame(mapApiGame(detail))
+    } catch {
+      // keep partial data
+    }
   }
 
-  const handleRemoveFromCart = (id: number) => {
+  const handleAddToCart = async (game: Game) => {
+    if (cartItems.find(g => g.id === game.id)) return
+    setCartItems(prev => [...prev, game])
+    if (authUser) {
+      try { await addToCart(game.id) } catch { /* non-critical */ }
+    }
+  }
+
+  const handleRemoveFromCart = async (id: string) => {
     setCartItems(prev => prev.filter(g => g.id !== id))
+    if (authUser) {
+      try { await removeFromCart(id) } catch { /* non-critical */ }
+    }
   }
 
   const handleNavigate = (page: Page) => {
@@ -79,16 +145,22 @@ function App() {
         activePage={currentPage}
         onNavigate={handleNavigate}
         cartCount={cartItems.length}
-        onSignIn={() => setAuthMode("signin")}
-        onRegister={() => setAuthMode("register")}
+        isAuthenticated={!!authUser}
+        username={authUser?.username}
+        onSignIn={() => { setAuthMode("signin"); setAuthModalOpen(true) }}
+        onRegister={() => { setAuthMode("register"); setAuthModalOpen(true) }}
+        onSignOut={handleSignOut}
       />
-      {authMode && (
+
+      {authModalOpen && !authUser && (
         <AuthModal
           mode={authMode}
-          onClose={() => setAuthMode(null)}
+          onClose={() => setAuthModalOpen(false)}
           onSwitchMode={setAuthMode}
+          onAuthSuccess={handleAuthSuccess}
         />
       )}
+
       {selectedGame ? (
         <GameDetail
           game={selectedGame}
@@ -96,7 +168,7 @@ function App() {
           cartItems={cartItems}
           onAddToCart={handleAddToCart}
           onBack={() => setSelectedGame(null)}
-          onSelectGame={setSelectedGame}
+          onSelectGame={handleSelectGame}
         />
       ) : (
         <>
@@ -139,7 +211,7 @@ function App() {
                           games={displayedGames}
                           variant="recommended"
                           onAddToCart={handleAddToCart}
-                          onSelectGame={setSelectedGame}
+                          onSelectGame={handleSelectGame}
                         />
                       </>
                     ) : (
@@ -149,14 +221,14 @@ function App() {
                           games={allGames.slice(0, 6)}
                           variant="discount"
                           onAddToCart={handleAddToCart}
-                          onSelectGame={setSelectedGame}
+                          onSelectGame={handleSelectGame}
                         />
                         <GameSection
                           title="Juegos recomendados"
                           games={allGames}
                           variant="recommended"
                           onAddToCart={handleAddToCart}
-                          onSelectGame={setSelectedGame}
+                          onSelectGame={handleSelectGame}
                         />
                       </>
                     )}
@@ -166,7 +238,7 @@ function App() {
             </>
           )}
           {currentPage === "library" && <Library />}
-          {currentPage === "profile" && <Profile />}
+          {currentPage === "profile" && <Profile authUser={authUser} />}
           {currentPage === "cart" && (
             <div className="home-page">
               <Cart items={cartItems} onRemove={handleRemoveFromCart} onContinueShopping={() => setCurrentPage("home")} />

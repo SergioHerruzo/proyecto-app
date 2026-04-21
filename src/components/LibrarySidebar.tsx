@@ -5,7 +5,7 @@ interface LibrarySidebarProps {
   searchQuery: string
   onSearch: (q: string) => void
   onSelectGame?: (game: Game) => void
-  selectedGameId?: number
+  selectedGameId?: string
 }
 
 export default function LibrarySidebar({ games, searchQuery, onSearch, onSelectGame, selectedGameId }: LibrarySidebarProps) {

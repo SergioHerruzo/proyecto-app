@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { AuthUser } from "../services/auth"
 
 interface Friend {
   id: number
@@ -47,7 +48,11 @@ const statusColor: Record<Friend["status"], string> = {
   offline: "#555",
 }
 
-export default function Profile() {
+interface ProfileProps {
+  authUser: AuthUser | null
+}
+
+export default function Profile({ authUser }: ProfileProps) {
   const [friends, setFriends] = useState<Friend[]>(mockFriends)
   const [addInput, setAddInput] = useState("")
   const [addError, setAddError] = useState("")
@@ -77,7 +82,7 @@ export default function Profile() {
         <div className="profile-card">
           <div className="profile-avatar" />
           <div className="profile-info">
-            <h1 className="profile-username">NOMBRE USUARIO</h1>
+            <h1 className="profile-username">{authUser?.username ?? "Invitado"}</h1>
             <span className="profile-level">NIVEL 46</span>
           </div>
         </div>

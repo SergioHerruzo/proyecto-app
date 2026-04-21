@@ -2,12 +2,12 @@ import type { Game } from "../types/games"
 
 interface CartProps {
   items: Game[]
-  onRemove: (id: number) => void
+  onRemove: (id: string) => void
   onContinueShopping: () => void
 }
 
 export default function Cart({ items, onRemove, onContinueShopping }: CartProps) {
-  const total = items.reduce((sum, g) => sum + g.price, 0)
+  const total = items.reduce((sum, g) => sum + (g.price ?? 0), 0)
 
   return (
     <div className="cart-page">

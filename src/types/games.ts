@@ -1,8 +1,9 @@
 export interface Game {
-  id: number
+  id: string
   title: string
   description?: string
   price?: number
+  discount?: number
   oldPrice?: number
   genres: string[]
   image: string
@@ -13,7 +14,7 @@ export interface Game {
 }
 
 export interface Collection {
-  id: number
+  id: string
   name: string
   games: Game[]
 }
