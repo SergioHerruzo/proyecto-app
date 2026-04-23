@@ -1,5 +1,5 @@
 .game-card {
-  background-color: #2a2a2a;
+  background-color: var(--bg-raised);
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
@@ -14,7 +14,7 @@
 .game-card-image {
   width: 100%;
   height: 110px;
-  background-color: #3a3a3a;
+  background-color: var(--bg-control);
   background-size: cover;
   background-position: center;
   position: relative;
@@ -29,8 +29,8 @@
   top: 8px;
   right: 8px;
   background-color: rgba(30, 30, 30, 0.85);
-  border: 1px solid #444;
-  color: #ccc;
+  border: 1px solid var(--border-3);
+  color: var(--text-3);
   border-radius: 4px;
   width: 30px;
   height: 30px;
@@ -41,15 +41,15 @@
 }
 
 .cart-btn:hover {
-  background-color: #444;
-  color: #fff;
+  background-color: var(--bg-control-hover);
+  color: var(--text-1);
 }
 
 .platform-icon {
   position: absolute;
   bottom: 8px;
   right: 8px;
-  color: #555;
+  color: var(--text-7);
   display: flex;
   align-items: center;
 }
@@ -61,7 +61,7 @@
 .game-card-title {
   font-size: 13px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-2);
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
@@ -70,7 +70,7 @@
 
 .game-card-genres {
   font-size: 11px;
-  color: #888;
+  color: var(--text-5);
   margin: 0 0 8px;
   white-space: nowrap;
   overflow: hidden;
@@ -86,5 +86,5 @@
 .price-current {
   font-size: 13px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-2);
 }

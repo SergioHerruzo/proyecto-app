@@ -19,11 +19,14 @@ import {
   getCart,
   addToCart,
   removeFromCart,
+  checkoutCart,
 } from "./services/api"
 import { restoreSession, logout } from "./services/auth"
 import type { AuthUser } from "./services/auth"
+import { isTauri } from "./utils/platform"
 
 type Page = "home" | "library" | "cart" | "profile"
+type Theme = "dark" | "light"
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home")
@@ -32,6 +35,7 @@ function App() {
   const [authMode, setAuthMode] = useState<"signin" | "register">("signin")
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
   const [authUser, setAuthUser] = useState<AuthUser | null>(null)
+  const [theme, setTheme] = useState<Theme>("dark")
 
   const [allGames, setAllGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
@@ -51,6 +55,12 @@ function App() {
       // cart load failure is non-critical
     }
   }
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(t => t === "dark" ? "light" : "dark")
 
   // Restore Cognito session on load
   useEffect(() => {
@@ -82,6 +92,7 @@ function App() {
     setAuthUser(null)
     setAuthToken(null)
     setCartItems([])
+    setCurrentPage("home")
   }
 
   const handleSearch = async (query: string) => {
@@ -116,11 +127,14 @@ function App() {
   }
 
   const handleAddToCart = async (game: Game) => {
+    if (!authUser) {
+      setAuthMode("signin")
+      setAuthModalOpen(true)
+      return
+    }
     if (cartItems.find(g => g.id === game.id)) return
     setCartItems(prev => [...prev, game])
-    if (authUser) {
-      try { await addToCart(game.id) } catch { /* non-critical */ }
-    }
+    try { await addToCart(game.id) } catch { /* non-critical */ }
   }
 
   const handleRemoveFromCart = async (id: string) => {
@@ -130,7 +144,14 @@ function App() {
     }
   }
 
+  const handleCheckout = async () => {
+    await checkoutCart()
+    setCartItems([])
+    setCurrentPage(isTauri ? "library" : "home")
+  }
+
   const handleNavigate = (page: Page) => {
+    if (page === "library" && !isTauri) return
     setSelectedGame(null)
     setCurrentPage(page)
   }
@@ -138,6 +159,7 @@ function App() {
   const featuredGame = allGames[0]
   const displayedGames = searchResults ?? allGames
   const showSearchResults = searchResults !== null
+  const discountedGames = allGames.filter(g => g.discount !== undefined && g.discount > 0)
 
   return (
     <>
@@ -150,6 +172,9 @@ function App() {
         onSignIn={() => { setAuthMode("signin"); setAuthModalOpen(true) }}
         onRegister={() => { setAuthMode("register"); setAuthModalOpen(true) }}
         onSignOut={handleSignOut}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        isDesktop={isTauri}
       />
 
       {authModalOpen && !authUser && (
@@ -195,7 +220,11 @@ function App() {
               {!loading && !error && (
                 <>
                   {!showSearchResults && featuredGame && (
-                    <HeroGame game={featuredGame} />
+                    <HeroGame
+                      game={featuredGame}
+                      onAddToCart={handleAddToCart}
+                      onSelectGame={handleSelectGame}
+                    />
                   )}
 
                   <div className="home-page">
@@ -216,6 +245,15 @@ function App() {
                       </>
                     ) : (
                       <>
+                        {discountedGames.length > 0 && (
+                          <GameSection
+                            title="Ofertas"
+                            games={discountedGames}
+                            variant="discount"
+                            onAddToCart={handleAddToCart}
+                            onSelectGame={handleSelectGame}
+                          />
+                        )}
                         <GameSection
                           title="Juegos disponibles"
                           games={allGames.slice(0, 6)}
@@ -241,7 +279,7 @@ function App() {
           {currentPage === "profile" && <Profile authUser={authUser} />}
           {currentPage === "cart" && (
             <div className="home-page">
-              <Cart items={cartItems} onRemove={handleRemoveFromCart} onContinueShopping={() => setCurrentPage("home")} />
+              <Cart items={cartItems} onRemove={handleRemoveFromCart} onContinueShopping={() => setCurrentPage("home")} onCheckout={handleCheckout} />
             </div>
           )}
         </>

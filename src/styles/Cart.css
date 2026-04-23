@@ -5,13 +5,13 @@
 .cart-title {
   font-size: 24px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-1);
   margin-bottom: 6px;
 }
 
 .cart-count {
   font-size: 13px;
-  color: #888;
+  color: var(--text-5);
   margin: 0 0 24px;
 }
 
@@ -21,13 +21,13 @@
   align-items: center;
   gap: 16px;
   padding: 60px 0;
-  color: #888;
+  color: var(--text-5);
 }
 
 .cart-list {
   display: flex;
   flex-direction: column;
-  border: 1px solid #2d2d2d;
+  border: 1px solid var(--border-1);
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 24px;
@@ -38,8 +38,8 @@
   align-items: center;
   gap: 20px;
   padding: 16px;
-  border-bottom: 1px solid #2d2d2d;
-  background-color: #222;
+  border-bottom: 1px solid var(--border-1);
+  background-color: var(--bg-item);
 }
 
 .cart-item:last-child {
@@ -50,7 +50,7 @@
   width: 180px;
   height: 110px;
   border-radius: 6px;
-  background-color: #3a3a3a;
+  background-color: var(--bg-control);
   background-size: cover;
   background-position: center;
   flex-shrink: 0;
@@ -63,13 +63,13 @@
 .cart-item-title {
   font-size: 16px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-2);
   margin-bottom: 6px;
 }
 
 .cart-item-genres {
   font-size: 13px;
-  color: #888;
+  color: var(--text-5);
   margin: 0;
 }
 
@@ -90,13 +90,13 @@
 .cart-item-price {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-1);
 }
 
 .cart-item-remove {
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #666;
+  border: 1px solid var(--border-2);
+  color: var(--text-6);
   border-radius: 4px;
   width: 28px;
   height: 28px;
@@ -127,13 +127,13 @@
 
 .cart-total-label {
   font-size: 14px;
-  color: #888;
+  color: var(--text-5);
 }
 
 .cart-total-price {
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-1);
 }
 
 .cart-actions {

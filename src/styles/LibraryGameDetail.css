@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 50px);
-  background-color: #121212;
+  background-color: var(--bg-base);
 }
 
 .lgd-hero {
@@ -35,8 +35,8 @@
   align-items: center;
   gap: 24px;
   padding: 14px 28px;
-  background-color: #1a1a1a;
-  border-bottom: 1px solid #2a2a2a;
+  background-color: var(--bg-base);
+  border-bottom: 1px solid var(--border-1);
 }
 
 .lgd-main-btn {
@@ -79,14 +79,14 @@
 
 .lgd-stat-label {
   font-size: 10px;
-  color: #666;
+  color: var(--text-6);
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
 .lgd-stat-value {
   font-size: 13px;
-  color: #e0e0e0;
+  color: var(--text-2);
   font-weight: 600;
 }
 
@@ -99,7 +99,7 @@
 .lgd-achievements-minibar {
   width: 60px;
   height: 4px;
-  background-color: #333;
+  background-color: var(--bg-control);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -117,8 +117,8 @@
 
 .lgd-icon-btn {
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #aaa;
+  border: 1px solid var(--border-2);
+  color: var(--text-4);
   width: 34px;
   height: 34px;
   border-radius: 4px;
@@ -128,24 +128,24 @@
 }
 
 .lgd-icon-btn:hover {
-  color: #fff;
-  border-color: #666;
+  color: var(--text-1);
+  border-color: var(--border-4);
 }
 
 /* Tabs */
 .lgd-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--border-1);
   padding: 0 28px;
-  background-color: #1a1a1a;
+  background-color: var(--bg-base);
 }
 
 .lgd-tab {
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #888;
+  color: var(--text-5);
   font-size: 13px;
   padding: 12px 16px;
   cursor: pointer;
@@ -154,11 +154,11 @@
 }
 
 .lgd-tab:hover {
-  color: #ccc;
+  color: var(--text-3);
 }
 
 .lgd-tab--active {
-  color: #fff;
+  color: var(--text-1);
   border-bottom-color: #4a9eff;
 }
 
@@ -188,7 +188,7 @@
 
 /* Featured news */
 .lgd-featured {
-  background-color: #1e1e1e;
+  background-color: var(--bg-surface);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -199,7 +199,7 @@
   letter-spacing: 1px;
   color: #4a9eff;
   padding: 8px 14px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .lgd-featured-body {
@@ -212,7 +212,7 @@
   flex-shrink: 0;
   background-size: cover;
   background-position: center;
-  background-color: #2a2a2a;
+  background-color: var(--bg-raised);
 }
 
 .lgd-featured-text {
@@ -224,7 +224,7 @@
 
 .lgd-featured-type {
   font-size: 10px;
-  color: #666;
+  color: var(--text-6);
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -232,18 +232,18 @@
 .lgd-featured-title {
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-1);
 }
 
 .lgd-featured-desc {
   font-size: 12px;
-  color: #999;
+  color: var(--text-5);
   line-height: 1.5;
 }
 
 /* DLC */
 .lgd-dlc {
-  background-color: #1e1e1e;
+  background-color: var(--bg-surface);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -253,14 +253,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .lgd-dlc-title {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
-  color: #888;
+  color: var(--text-5);
 }
 
 .lgd-dlc-arrows {
@@ -270,8 +270,8 @@
 
 .lgd-dlc-arrow {
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #888;
+  border: 1px solid var(--border-2);
+  color: var(--text-5);
   width: 22px;
   height: 22px;
   border-radius: 3px;
@@ -282,7 +282,7 @@
 }
 
 .lgd-dlc-arrow:hover {
-  color: #fff;
+  color: var(--text-1);
 }
 
 .lgd-dlc-grid {
@@ -303,7 +303,7 @@
   aspect-ratio: 5/3;
   background-size: cover;
   background-position: center;
-  background-color: #2a2a2a;
+  background-color: var(--bg-raised);
   border-radius: 4px;
   position: relative;
   display: flex;
@@ -319,7 +319,7 @@
 
 .lgd-dlc-name {
   font-size: 11px;
-  color: #ccc;
+  color: var(--text-3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -327,7 +327,7 @@
 
 /* Right panel sections */
 .lgd-section {
-  background-color: #1e1e1e;
+  background-color: var(--bg-surface);
   border-radius: 8px;
   padding: 14px;
   display: flex;
@@ -339,12 +339,12 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
-  color: #888;
+  color: var(--text-5);
 }
 
 .lgd-section-sub {
   font-size: 12px;
-  color: #666;
+  color: var(--text-6);
 }
 
 .lgd-friend-avatars {
@@ -357,8 +357,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #3a3a3a;
-  border: 2px solid #2a2a2a;
+  background-color: var(--bg-control);
+  border: 2px solid var(--bg-raised);
 }
 
 .lgd-link-btn {
@@ -381,7 +381,7 @@
 .lgd-achievements-bar {
   width: 100%;
   height: 6px;
-  background-color: #333;
+  background-color: var(--bg-control);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -397,7 +397,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 0;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .lgd-achievement-icon {
@@ -414,12 +414,12 @@
 .lgd-achievement-title {
   font-size: 12px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-2);
 }
 
 .lgd-achievement-desc {
   font-size: 11px;
-  color: #666;
+  color: var(--text-6);
 }
 
 .lgd-badge-row {
@@ -444,8 +444,8 @@
 }
 
 .lgd-badge--locked {
-  background-color: #2a2a2a;
-  border: 1px solid #333;
+  background-color: var(--bg-raised);
+  border: 1px solid var(--border-2);
   filter: grayscale(1);
   opacity: 0.5;
 }

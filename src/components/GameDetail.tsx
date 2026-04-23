@@ -24,7 +24,6 @@ const mockFriendsWithGame = ["PlayerOne", "GamerX"]
 
 export default function GameDetail({ game, allGames, cartItems, onAddToCart, onBack, onSelectGame }: GameDetailProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [wishlisted, setWishlisted] = useState(false)
 
   const screenshots = getScreenshots(game)
   const inCart = cartItems.some(g => g.id === game.id)
@@ -85,16 +84,6 @@ export default function GameDetail({ game, allGames, cartItems, onAddToCart, onB
                   style={{ backgroundImage: `url(${src})` }}
                 />
               ))}
-            </div>
-
-            {/* Action buttons */}
-            <div className="detail-actions">
-              <button
-                className={`detail-action-wishlist ${wishlisted ? "detail-action-wishlist--active" : ""}`}
-                onClick={() => setWishlisted(w => !w)}
-              >
-                {wishlisted ? "✓ En tu lista de deseados" : "+ Añadir a tu lista de deseados"}
-              </button>
             </div>
 
             {/* Purchase */}

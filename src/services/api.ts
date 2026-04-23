@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.17.17:5239"
+const BASE_URL = "http://localhost:5239"
 
 // --- Auth token ---
 
@@ -45,6 +45,7 @@ export interface GameListItemResponse {
   title: string
   price: number
   discount: number
+  artworks: GameArtworkSummary[]
 }
 
 export interface GameResponse {
@@ -110,6 +111,7 @@ export interface UpdateGameRequest {
 import type { Game } from "../types/games"
 
 export function mapApiGameListItem(item: GameListItemResponse): Game {
+  const artwork = item.artworks?.[0]
   return {
     id: item.id,
     title: item.title,
@@ -117,7 +119,8 @@ export function mapApiGameListItem(item: GameListItemResponse): Game {
     discount: item.discount > 0 ? item.discount : undefined,
     oldPrice: item.discount > 0 ? item.price + item.discount : undefined,
     genres: [],
-    image: `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(item.title)}`,
+    image: artwork?.mediumImageUrl
+      ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(item.title)}`,
   }
 }
 
@@ -182,8 +185,7 @@ export async function getGames(
 export async function getGameById(id: string): Promise<GameResponse> {
   const res = await fetch(`${BASE_URL}/games/${id}`)
   if (!res.ok) throw new Error(`Error ${res.status}`)
-  const result: ApiResult<GameResponse> = await res.json()
-  return result.value
+  return res.json()
 }
 
 export async function deleteGame(id: string): Promise<void> {
@@ -218,8 +220,7 @@ export async function getCart(): Promise<GetUserCartResponse> {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error(`Error ${res.status}`)
-  const result: ApiResult<GetUserCartResponse> = await res.json()
-  return result.value
+  return res.json()
 }
 
 export async function addToCart(gameId: string): Promise<void> {
@@ -236,6 +237,28 @@ export async function removeFromCart(gameId: string): Promise<void> {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error(`Error ${res.status}`)
+}
+
+// --- User Library API ---
+
+export async function checkoutCart(): Promise<void> {
+  const res = await fetch(`${BASE_URL}/users/me/cart/checkout`, {
+    method: "POST",
+    headers: authHeaders(),
+  })
+  const body = await res.text().catch(() => "")
+  console.log(`[API] POST /users/me/cart/checkout → ${res.status}`, body)
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+}
+
+export async function getUserLibrary(): Promise<GameSummary[]> {
+  const res = await fetch(`${BASE_URL}/users/me/library`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  const result: { games: GameSummary[] } = await res.json()
+  console.log("[API] GET /users/me/library →", result)
+  return result.games
 }
 
 // --- User Collections API ---

@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   gap: 28px;
-  background-color: #222;
+  background-color: var(--bg-item);
   border-radius: 12px;
   padding: 32px;
 }
@@ -26,7 +26,7 @@
   width: 130px;
   height: 130px;
   border-radius: 50%;
-  background-color: #3a3a3a;
+  background-color: var(--bg-control);
   flex-shrink: 0;
 }
 
@@ -39,13 +39,13 @@
 .profile-username {
   font-size: 28px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-1);
   letter-spacing: 1px;
 }
 
 .profile-level {
   font-size: 13px;
-  color: #888;
+  color: var(--text-5);
   letter-spacing: 1px;
 }
 
@@ -56,7 +56,7 @@
 
 .profile-stat-card {
   flex: 1;
-  background-color: #222;
+  background-color: var(--bg-item);
   border-radius: 12px;
   padding: 24px;
   display: flex;
@@ -73,14 +73,14 @@
 .profile-stat-title {
   font-size: 14px;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--text-2);
   letter-spacing: 1px;
 }
 
 .btn-ver-mas {
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #888;
+  border: 1px solid var(--border-2);
+  color: var(--text-5);
   border-radius: 4px;
   padding: 4px 10px;
   font-size: 11px;
@@ -88,13 +88,13 @@
 }
 
 .btn-ver-mas:hover {
-  color: #e0e0e0;
-  border-color: #666;
+  color: var(--text-2);
+  border-color: var(--border-4);
 }
 
 .profile-stat-content {
   height: 140px;
-  background-color: #2d2d2d;
+  background-color: var(--bg-input);
   border-radius: 8px;
 }
 
@@ -102,7 +102,7 @@
 .profile-sidebar {
   width: 260px;
   flex-shrink: 0;
-  background-color: #222;
+  background-color: var(--bg-item);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -111,7 +111,7 @@
 
 .friends-add {
   padding: 14px;
-  border-bottom: 1px solid #2d2d2d;
+  border-bottom: 1px solid var(--border-1);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -119,7 +119,7 @@
 
 .friends-add-label {
   font-size: 11px;
-  color: #888;
+  color: var(--text-5);
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -132,27 +132,27 @@
 
 .friends-add-input {
   flex: 1;
-  background-color: #2d2d2d;
-  border: 1px solid #3a3a3a;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-2);
   border-radius: 4px;
-  color: #e0e0e0;
+  color: var(--text-2);
   font-size: 13px;
   padding: 7px 10px;
   outline: none;
 }
 
 .friends-add-input::placeholder {
-  color: #555;
+  color: var(--text-7);
 }
 
 .friends-add-input:focus {
-  border-color: #555;
+  border-color: var(--border-4);
 }
 
 .friends-add-btn {
-  background-color: #3a3a3a;
-  border: 1px solid #4a4a4a;
-  color: #ccc;
+  background-color: var(--bg-control);
+  border: 1px solid var(--border-3);
+  color: var(--text-3);
   border-radius: 4px;
   width: 32px;
   font-size: 18px;
@@ -164,8 +164,8 @@
 }
 
 .friends-add-btn:hover {
-  background-color: #4a4a4a;
-  color: #fff;
+  background-color: var(--bg-control-hover);
+  color: var(--text-1);
 }
 
 .friends-add-error {
@@ -179,20 +179,20 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid #2d2d2d;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .friends-title {
   font-size: 12px;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--text-2);
   letter-spacing: 1px;
 }
 
 .friends-count {
   font-size: 11px;
-  color: #666;
-  background-color: #2d2d2d;
+  color: var(--text-6);
+  background-color: var(--bg-input);
   border-radius: 10px;
   padding: 2px 7px;
 }
@@ -215,7 +215,7 @@
 }
 
 .friend-item:hover {
-  background-color: #2a2a2a;
+  background-color: var(--bg-raised);
 }
 
 .friend-status-dot {
@@ -227,7 +227,7 @@
 
 .friend-status-dot--online  { background-color: #4caf50; }
 .friend-status-dot--playing { background-color: #2196f3; }
-.friend-status-dot--offline { background-color: #555; }
+.friend-status-dot--offline { background-color: var(--border-4); }
 
 .friend-info {
   display: flex;
@@ -238,7 +238,7 @@
 
 .friend-name {
   font-size: 13px;
-  color: #e0e0e0;
+  color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -246,7 +246,7 @@
 
 .friend-status-text {
   font-size: 11px;
-  color: #888;
+  color: var(--text-5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -264,8 +264,8 @@
 }
 
 .friend-modal {
-  background-color: #242424;
-  border: 1px solid #3a3a3a;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-2);
   border-radius: 12px;
   padding: 28px 24px;
   width: 280px;
@@ -280,13 +280,13 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: #3a3a3a;
+  background-color: var(--bg-control);
 }
 
 .friend-modal-name {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-1);
   margin: 0;
 }
 
@@ -295,13 +295,13 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #aaa;
+  color: var(--text-4);
 }
 
 .friend-modal-divider {
   width: 100%;
   height: 1px;
-  background-color: #2d2d2d;
+  background-color: var(--border-1);
   margin: 4px 0;
 }
 
@@ -322,8 +322,8 @@
 
 /* ===== ACHIEVEMENTS MODAL ===== */
 .achievements-modal {
-  background-color: #242424;
-  border: 1px solid #3a3a3a;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-2);
   border-radius: 12px;
   width: 480px;
   max-height: 70vh;
@@ -337,13 +337,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px 16px;
-  border-bottom: 1px solid #2d2d2d;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .achievements-modal-title {
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-1);
   margin: 0;
 }
 
@@ -359,7 +359,7 @@
   align-items: flex-start;
   gap: 14px;
   padding: 14px 24px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--bg-raised);
   transition: background-color 0.15s;
 }
 
@@ -368,7 +368,7 @@
 }
 
 .achievement-item:hover {
-  background-color: #2a2a2a;
+  background-color: var(--bg-raised);
 }
 
 .achievement-icon {
@@ -388,16 +388,16 @@
 .achievement-title {
   font-size: 14px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-2);
 }
 
 .achievement-description {
   font-size: 12px;
-  color: #888;
+  color: var(--text-5);
 }
 
 .achievement-game {
   font-size: 11px;
-  color: #555;
+  color: var(--text-7);
   margin-top: 2px;
 }

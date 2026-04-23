@@ -2,9 +2,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #1b1b1b;
+  background-color: var(--bg-base);
   padding: 10px 24px;
-  border-bottom: 1px solid #2d2d2d;
+  border-bottom: 1px solid var(--border-1);
   gap: 24px;
 }
 
@@ -12,8 +12,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #2a2a2a;
-  border: 1px solid #3a3a3a;
+  background-color: var(--bg-raised);
+  border: 1px solid var(--border-2);
   border-radius: 20px;
   padding: 6px 14px;
   white-space: nowrap;
@@ -27,7 +27,7 @@
 .logo-text {
   font-size: 14px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-2);
 }
 
 .nav {
@@ -37,7 +37,7 @@
 }
 
 .nav-link {
-  color: #aaa;
+  color: var(--text-4);
   text-decoration: none;
   font-size: 13px;
   padding: 6px 10px;
@@ -47,7 +47,7 @@
 
 .nav-link:hover,
 .nav-link.active {
-  color: #fff;
+  color: var(--text-1);
 }
 
 .auth-buttons {
@@ -59,7 +59,7 @@
 
 .auth-username {
   font-size: 13px;
-  color: #ccc;
+  color: var(--text-3);
 }
 
 .cart-badge {
@@ -76,6 +76,47 @@
   padding: 0 4px;
   margin-left: 4px;
   vertical-align: middle;
+}
+
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: #1a6db5;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.btn-download:hover {
+  background-color: #2080cc;
+}
+
+.theme-toggle {
+  background-color: transparent;
+  border: 1px solid var(--border-4);
+  border-radius: 4px;
+  color: var(--text-4);
+  font-size: 15px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  border-color: var(--text-4);
+  color: var(--text-1);
+  background-color: var(--bg-raised);
 }
 
 @media (max-width: 600px) {

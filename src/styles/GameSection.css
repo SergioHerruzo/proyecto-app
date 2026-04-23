@@ -1,12 +1,12 @@
 .game-section {
   padding: 28px 24px;
-  border-bottom: 1px solid #2d2d2d;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .section-title {
   font-size: 18px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-2);
   margin-bottom: 20px;
 }
 
@@ -32,9 +32,9 @@
 }
 
 .carousel-btn {
-  background-color: #2d2d2d;
-  border: 1px solid #3a3a3a;
-  color: #aaa;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-2);
+  color: var(--text-4);
   border-radius: 4px;
   width: 36px;
   height: 36px;
@@ -46,8 +46,8 @@
 }
 
 .carousel-btn:hover:not(:disabled) {
-  background-color: #3a3a3a;
-  color: #fff;
+  background-color: var(--bg-control);
+  color: var(--text-1);
 }
 
 .carousel-btn:disabled {

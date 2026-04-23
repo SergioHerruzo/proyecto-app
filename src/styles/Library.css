@@ -6,25 +6,25 @@
 
 /* ===== SIDEBAR ===== */
 .library-sidebar {
-  width: 220px;
+  width: 20%;
   flex-shrink: 0;
-  background-color: #1e1e1e;
-  border-right: 1px solid #2d2d2d;
+  background-color: var(--bg-base);
+  border-right: 1px solid var(--border-1);
   display: flex;
   flex-direction: column;
 }
 
 .sidebar-search {
   padding: 12px;
-  border-bottom: 1px solid #2d2d2d;
+  border-bottom: 1px solid var(--border-1);
 }
 
 .sidebar-search-input {
   width: 100%;
-  background-color: #2d2d2d;
-  border: 1px solid #3a3a3a;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-2);
   border-radius: 4px;
-  color: #e0e0e0;
+  color: var(--text-2);
   font-size: 12px;
   padding: 7px 10px;
   outline: none;
@@ -32,7 +32,7 @@
 }
 
 .sidebar-search-input::placeholder {
-  color: #666;
+  color: var(--text-6);
 }
 
 .sidebar-game-list {
@@ -53,7 +53,7 @@
 }
 
 .sidebar-game-item:hover {
-  background-color: #2a2a2a;
+  background-color: var(--bg-raised);
 }
 
 .sidebar-game-item--active {
@@ -62,10 +62,10 @@
 }
 
 .sidebar-game-thumb {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 4px;
-  background-color: #3a3a3a;
+  background-color: var(--bg-control);
   background-size: cover;
   background-position: center;
   flex-shrink: 0;
@@ -73,7 +73,7 @@
 
 .sidebar-game-title {
   font-size: 12px;
-  color: #ccc;
+  color: var(--text-3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -94,7 +94,7 @@
 }
 
 .collection-card {
-  background-color: #2a2a2a;
+  background-color: var(--bg-raised);
   border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
@@ -110,7 +110,7 @@
 }
 
 .collection-card--new {
-  border: 2px dashed #3a3a3a;
+  border: 2px dashed var(--border-2);
   background-color: transparent;
   align-items: center;
   justify-content: center;
@@ -119,19 +119,19 @@
 }
 
 .collection-card--new:hover {
-  border-color: #666;
+  border-color: var(--border-4);
   transform: translateY(-3px);
 }
 
 .collection-new-icon {
   font-size: 28px;
-  color: #555;
+  color: var(--text-7);
   line-height: 1;
 }
 
 .collection-new-label {
   font-size: 12px;
-  color: #666;
+  color: var(--text-6);
   text-align: center;
   padding: 0 12px;
 }
@@ -144,7 +144,7 @@
 }
 
 .collection-cover-thumb {
-  background-color: #3a3a3a;
+  background-color: var(--bg-control);
   background-size: cover;
   background-position: center;
 }
@@ -152,9 +152,9 @@
 .collection-name {
   font-size: 12px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--text-2);
   padding: 8px 10px;
-  background-color: #2a2a2a;
+  background-color: var(--bg-raised);
 }
 
 /* ===== COLLECTION DETAIL ===== */
@@ -170,8 +170,8 @@
   align-items: center;
   gap: 6px;
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #aaa;
+  border: 1px solid var(--border-2);
+  color: var(--text-4);
   border-radius: 4px;
   padding: 6px 12px;
   font-size: 13px;
@@ -180,19 +180,19 @@
 }
 
 .btn-back:hover {
-  color: #fff;
-  border-color: #666;
+  color: var(--text-1);
+  border-color: var(--border-4);
 }
 
 .collection-detail-title {
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-1);
 }
 
 .collection-detail-count {
   font-size: 13px;
-  color: #666;
+  color: var(--text-6);
 }
 
 .covers-grid {
@@ -213,7 +213,7 @@
 .game-cover-image {
   width: 100%;
   aspect-ratio: 3 / 4;
-  background-color: #3a3a3a;
+  background-color: var(--bg-control);
   background-size: cover;
   background-position: center;
   border-radius: 8px;
@@ -221,7 +221,7 @@
 
 .game-cover-title {
   font-size: 12px;
-  color: #ccc;
+  color: var(--text-3);
   margin: 6px 0 0;
   text-align: center;
   white-space: nowrap;

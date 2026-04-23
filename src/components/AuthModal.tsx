@@ -70,7 +70,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
 
     if (mode === "signin") {
       if (!email.trim() || !password.trim()) {
-        setError("Por favor completa todos los campos.")
+        setError("Introduce tu correo o usuario y contraseña.")
         return
       }
     } else {
@@ -104,7 +104,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
       if (message.includes("UserNotFoundException") || message.includes("NotAuthorizedException")) {
-        setError("Email o contraseña incorrectos.")
+        setError("Correo, usuario o contraseña incorrectos.")
       } else if (message.includes("UsernameExistsException")) {
         setError("Ya existe una cuenta con ese nombre de usuario.")
       } else if (message.includes("InvalidPasswordException")) {
@@ -243,11 +243,11 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
 
           {mode === "signin" ? (
             <div className="auth-field">
-              <label className="auth-label">Usuario</label>
+              <label className="auth-label">Correo o usuario</label>
               <input
                 type="text"
                 className="auth-input"
-                placeholder="nombre_usuario"
+                placeholder="tu@email.com o nombre_usuario"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setError(null) }}
                 onKeyDown={e => e.key === "Enter" && handleSubmit()}
@@ -337,7 +337,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
             onClick={handleSubmit}
             disabled={loading || (mode === "register" && (!isPasswordValid(passwordRules) || password !== confirmPassword))}
           >
-            {loading ? "..." : mode === "signin" ? "Sign In" : "Register"}
+            {loading ? "..." : mode === "signin" ? "Iniciar sesión" : "Registrarse"}
           </button>
 
           {mode === "signin" && (

@@ -1,13 +1,29 @@
 import '../styles/Cart.css'
+import { useState } from "react"
 import type { Game } from "../types/games"
 
 interface CartProps {
   items: Game[]
   onRemove: (id: string) => void
   onContinueShopping: () => void
+  onCheckout: () => Promise<void>
 }
 
-export default function Cart({ items, onRemove, onContinueShopping }: CartProps) {
+export default function Cart({ items, onRemove, onContinueShopping, onCheckout }: CartProps) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleCheckout = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      await onCheckout()
+    } catch {
+      setError("Error al procesar la compra. Inténtalo de nuevo.")
+    } finally {
+      setLoading(false)
+    }
+  }
   const total = items.reduce((sum, g) => sum + (g.price ?? 0), 0)
 
   return (
@@ -60,13 +76,14 @@ export default function Cart({ items, onRemove, onContinueShopping }: CartProps)
               <span className="cart-total-price">{total.toFixed(2)}€</span>
             </div>
             <div className="cart-actions">
-              <button className="btn-outline" onClick={onContinueShopping}>
+              <button className="btn-outline" onClick={onContinueShopping} disabled={loading}>
                 Seguir comprando
               </button>
-              <button className="btn-primary">
-                Continuar al pago
+              <button className="btn-primary" onClick={handleCheckout} disabled={loading}>
+                {loading ? "Procesando..." : "Continuar al pago"}
               </button>
             </div>
+            {error && <p style={{ color: "#f44", textAlign: "right", margin: "8px 0 0" }}>{error}</p>}
           </div>
         </>
       )}
