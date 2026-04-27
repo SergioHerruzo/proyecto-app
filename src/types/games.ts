@@ -17,4 +17,5 @@ export interface Collection {
   id: string
   name: string
   games: Game[]
+  previewUrls?: string[]
 }

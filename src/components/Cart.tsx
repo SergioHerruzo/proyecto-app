@@ -56,7 +56,7 @@ export default function Cart({ items, onRemove, onContinueShopping, onCheckout }
                     {game.oldPrice && (
                       <span className="price-old">{game.oldPrice.toFixed(2)}€</span>
                     )}
-                    <span className="cart-item-price">{game.price.toFixed(2)}€</span>
+                    <span className="cart-item-price">{(game.price ?? 0).toFixed(2)}€</span>
                   </div>
                   <button
                     className="cart-item-remove"

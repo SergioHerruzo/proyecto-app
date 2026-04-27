@@ -1,35 +1,103 @@
 import '../styles/Library.css'
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import LibrarySidebar from "./LibrarySidebar"
 import CollectionsView from "./CollectionsView"
 import CollectionDetail from "./CollectionDetail"
 import LibraryGameDetail from "./LibraryGameDetail"
 import type { Game, Collection } from "../types/games"
-import { getUserLibrary, mapGameSummary } from "../services/api"
+import {
+  getUserLibrary,
+  mapGameSummary,
+  getUserCollections,
+  mapCollectionListItem,
+  createCollection,
+  deleteCollection,
+  addGameToCollection,
+  removeGameFromCollection,
+  getCollectionById,
+} from "../services/api"
 
 export default function Library() {
   const [ownedGames, setOwnedGames] = useState<Game[]>([])
-  const [collections] = useState<Collection[]>([])
+  const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null)
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
 
+  const loadCollections = useCallback(async () => {
+    try {
+      const page = await getUserCollections()
+      setCollections(page.items.map(mapCollectionListItem))
+    } catch (err) {
+      console.error("[Library] getUserCollections failed:", err)
+    }
+  }, [])
+
   useEffect(() => {
-    getUserLibrary()
-      .then(summaries => setOwnedGames(summaries.map(mapGameSummary)))
+    Promise.all([
+      getUserLibrary().then(summaries => setOwnedGames(summaries.map(mapGameSummary))),
+      loadCollections(),
+    ])
       .catch(err => {
-        console.error("[Library] getUserLibrary failed:", err)
+        console.error("[Library] initial load failed:", err)
         setFetchError(err?.message ?? "Error desconocido")
-        setOwnedGames([])
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [loadCollections])
 
   const handleSelectGame = (game: Game) => {
     setSelectedCollection(null)
     setSelectedGame(game)
+  }
+
+  const handleSelectCollection = async (collection: Collection) => {
+    setSelectedGame(null)
+    try {
+      const full = await getCollectionById(collection.id)
+      setSelectedCollection(full)
+    } catch {
+      setSelectedCollection(collection)
+    }
+  }
+
+  const handleCreateCollection = async (name: string) => {
+    const created = await createCollection(name)
+    const newCollection: Collection = { id: created.id, name: created.name, games: [], previewUrls: [] }
+    setCollections(prev => [newCollection, ...prev])
+  }
+
+  const handleDeleteCollection = async (collectionId: string) => {
+    await deleteCollection(collectionId)
+    setCollections(prev => prev.filter(c => c.id !== collectionId))
+    if (selectedCollection?.id === collectionId) setSelectedCollection(null)
+  }
+
+  const handleAddGameToCollection = async (collectionId: string, gameId: string) => {
+    await addGameToCollection(collectionId, gameId)
+    // Refresh the collection list to update preview thumbnails
+    loadCollections()
+    // If viewing that collection detail, refresh it
+    if (selectedCollection?.id === collectionId) {
+      try {
+        const full = await getCollectionById(collectionId)
+        setSelectedCollection(full)
+      } catch {
+        // keep current
+      }
+    }
+  }
+
+  const handleRemoveGameFromCollection = async (collectionId: string, gameId: string) => {
+    await removeGameFromCollection(collectionId, gameId)
+    loadCollections()
+    if (selectedCollection?.id === collectionId) {
+      setSelectedCollection(prev => prev
+        ? { ...prev, games: prev.games.filter(g => g.id !== gameId) }
+        : null
+      )
+    }
   }
 
   if (loading) {
@@ -77,11 +145,16 @@ export default function Library() {
             collection={selectedCollection}
             onBack={() => setSelectedCollection(null)}
             onSelectGame={handleSelectGame}
+            onAddGame={(gameId) => handleAddGameToCollection(selectedCollection.id, gameId)}
+            onRemoveGame={(gameId) => handleRemoveGameFromCollection(selectedCollection.id, gameId)}
           />
         ) : (
           <CollectionsView
             collections={collections}
-            onSelectCollection={setSelectedCollection}
+            onSelectCollection={handleSelectCollection}
+            onCreateCollection={handleCreateCollection}
+            onDeleteCollection={handleDeleteCollection}
+            onAddGameToCollection={handleAddGameToCollection}
           />
         )}
       </main>

@@ -228,3 +228,196 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ===== DRAG & DROP ===== */
+.sidebar-game-item[draggable="true"] {
+  cursor: grab;
+}
+
+.sidebar-game-item[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.collection-card--drag-over {
+  border: 2px solid #4a9eff !important;
+  box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
+  transform: scale(1.03) translateY(-3px);
+}
+
+/* ===== COLLECTION FOOTER (name + delete) ===== */
+.collection-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background-color: var(--bg-raised);
+}
+
+.collection-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-6);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+  flex-shrink: 0;
+}
+
+.collection-card:hover .collection-delete-btn {
+  opacity: 1;
+}
+
+.collection-delete-btn:hover {
+  color: #f44;
+  background-color: rgba(255, 68, 68, 0.12);
+}
+
+/* ===== CREATE COLLECTION FORM ===== */
+.collection-card--creating {
+  justify-content: center;
+  padding: 16px;
+  gap: 10px;
+}
+
+.collection-create-input {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  color: var(--text-1);
+  font-size: 12px;
+  padding: 6px 8px;
+  outline: none;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.collection-create-input:focus {
+  border-color: #4a9eff;
+}
+
+.collection-create-actions {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.collection-create-btn {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: 4px;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.collection-create-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.collection-create-btn--ok {
+  background-color: #4a9eff;
+  color: #fff;
+}
+
+.collection-create-btn--ok:hover:not(:disabled) {
+  background-color: #3a8eee;
+}
+
+.collection-create-btn--cancel {
+  background-color: var(--bg-control);
+  color: var(--text-4);
+}
+
+.collection-create-btn--cancel:hover {
+  background-color: var(--bg-raised);
+}
+
+/* ===== COLLECTION DETAIL DROP ZONE ===== */
+.collection-drop-zone {
+  border: 2px dashed var(--border-2);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 20px;
+  text-align: center;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.collection-drop-zone--active {
+  border-color: #4a9eff;
+  background-color: rgba(74, 158, 255, 0.06);
+}
+
+.collection-drop-zone-label {
+  font-size: 12px;
+  color: var(--text-6);
+}
+
+.collection-drop-zone--active .collection-drop-zone-label {
+  color: #4a9eff;
+}
+
+/* ===== COLLECTION EMPTY STATE ===== */
+.collection-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 48px 0;
+  color: var(--text-5);
+}
+
+.collection-empty p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.collection-empty p:first-child {
+  font-size: 15px;
+  color: var(--text-4);
+}
+
+/* ===== GAME COVER REMOVE BUTTON ===== */
+.game-cover-image-wrapper {
+  position: relative;
+}
+
+.game-cover-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background-color: rgba(0, 0, 0, 0.65);
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background-color 0.15s;
+  line-height: 1;
+}
+
+.game-cover-card:hover .game-cover-remove-btn {
+  opacity: 1;
+}
+
+.game-cover-remove-btn:hover {
+  background-color: rgba(255, 60, 60, 0.85);
+}
+
+.game-cover-remove-btn--loading {
+  opacity: 1;
+  cursor: not-allowed;
+}

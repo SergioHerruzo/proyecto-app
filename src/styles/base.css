@@ -80,8 +80,8 @@ button {
 
 /* ===== SHARED BUTTONS ===== */
 .btn-primary {
-  background-color: #6dcd5b;
-  color: #0f2a0a;
+  background-color: #29b6f6;
+  color: #fff;
   border: none;
   border-radius: 4px;
   padding: 7px 16px;
@@ -91,7 +91,7 @@ button {
 }
 
 .btn-primary:hover {
-  background-color: #7ddd6b;
+  background-color: #0ea5e9;
 }
 
 .btn-outline {

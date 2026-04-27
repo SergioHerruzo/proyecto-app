@@ -32,6 +32,11 @@ export default function LibrarySidebar({ games, searchQuery, onSearch, onSelectG
             key={game.id}
             className={`sidebar-game-item ${game.id === selectedGameId ? "sidebar-game-item--active" : ""}`}
             onClick={() => onSelectGame?.(game)}
+            draggable
+            onDragStart={e => {
+              e.dataTransfer.setData("gameId", game.id)
+              e.dataTransfer.effectAllowed = "copy"
+            }}
           >
             <div
               className="sidebar-game-thumb"

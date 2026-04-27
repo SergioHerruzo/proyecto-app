@@ -271,6 +271,30 @@ export interface GameCollectionListItemResponse {
   createdAt: string
 }
 
+export interface GameCollectionDetailsResponse {
+  id: string
+  name: string
+  games: GameListItemResponse[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface GameCollectionCreatedResponse {
+  id: string
+  name: string
+}
+
+import type { Collection } from "../types/games"
+
+export function mapCollectionListItem(item: GameCollectionListItemResponse): Collection {
+  return {
+    id: item.id,
+    name: item.name,
+    games: [],
+    previewUrls: item.previewSmallPictureUrls,
+  }
+}
+
 export async function getUserCollections(
   pageNumber = 1,
   pageSize = 20,
@@ -283,4 +307,52 @@ export async function getUserCollections(
   })
   if (!res.ok) throw new Error(`Error ${res.status}`)
   return res.json()
+}
+
+export async function getCollectionById(collectionId: string): Promise<Collection> {
+  const res = await fetch(`${BASE_URL}/users/me/collections/${collectionId}`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  const data: GameCollectionDetailsResponse = await res.json()
+  return {
+    id: data.id,
+    name: data.name,
+    games: data.games.map(mapApiGameListItem),
+    previewUrls: data.games.slice(0, 4).map(g => g.artworks?.[0]?.smallImageUrl ?? ""),
+  }
+}
+
+export async function createCollection(name: string): Promise<GameCollectionCreatedResponse> {
+  const res = await fetch(`${BASE_URL}/users/me/collections`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  return res.json()
+}
+
+export async function deleteCollection(collectionId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/users/me/collections/${collectionId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+}
+
+export async function addGameToCollection(collectionId: string, gameId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/users/me/collections/${collectionId}/games/${gameId}`, {
+    method: "POST",
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+}
+
+export async function removeGameFromCollection(collectionId: string, gameId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/users/me/collections/${collectionId}/games/${gameId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
 }
