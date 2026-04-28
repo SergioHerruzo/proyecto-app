@@ -84,15 +84,10 @@ export default function Profile({ authUser }: ProfileProps) {
           <div className="profile-avatar" />
           <div className="profile-info">
             <h1 className="profile-username">{authUser?.username ?? "Invitado"}</h1>
-            <span className="profile-level">NIVEL 46</span>
           </div>
         </div>
 
         <div className="profile-stats">
-          <div className="profile-stat-card">
-            <h2 className="profile-stat-title">HORAS JUGADAS</h2>
-            <div className="profile-stat-content" />
-          </div>
           <div className="profile-stat-card">
             <div className="profile-stat-header">
               <h2 className="profile-stat-title">LOGROS</h2>

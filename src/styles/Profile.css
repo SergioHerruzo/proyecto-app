@@ -43,12 +43,6 @@
   letter-spacing: 1px;
 }
 
-.profile-level {
-  font-size: 13px;
-  color: var(--text-5);
-  letter-spacing: 1px;
-}
-
 .profile-stats {
   display: flex;
   gap: 16px;

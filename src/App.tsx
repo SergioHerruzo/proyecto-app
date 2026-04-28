@@ -25,7 +25,7 @@ import { restoreSession, logout } from "./services/auth"
 import type { AuthUser } from "./services/auth"
 import { isTauri } from "./utils/platform"
 
-type Page = "home" | "library" | "cart" | "profile"
+type Page = "home" | "library" | "cart" | "profile" | "search"
 type Theme = "dark" | "light"
 
 function App() {
@@ -96,13 +96,11 @@ function App() {
   }
 
   const handleSearch = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults(null)
-      return
-    }
+    if (!query.trim()) return
+    setCurrentPage("search")
     setSearching(true)
     try {
-      const page = await getGames(query, [], 1, 20)
+      const page = await getGames(query, [], 1, 50)
       setSearchResults(page.items.map(mapApiGameListItem))
     } catch {
       setSearchResults([])
@@ -113,7 +111,12 @@ function App() {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
-    if (!value.trim()) setSearchResults(null)
+  }
+
+  const handleClearSearch = () => {
+    setSearchQuery("")
+    setSearchResults(null)
+    setCurrentPage("home")
   }
 
   const handleSelectGame = async (game: Game) => {
@@ -153,12 +156,14 @@ function App() {
   const handleNavigate = (page: Page) => {
     if (page === "library" && !isTauri) return
     setSelectedGame(null)
+    if (page !== "search") {
+      setSearchQuery("")
+      setSearchResults(null)
+    }
     setCurrentPage(page)
   }
 
   const featuredGame = allGames[0]
-  const displayedGames = searchResults ?? allGames
-  const showSearchResults = searchResults !== null
   const discountedGames = allGames.filter(g => g.discount !== undefined && g.discount > 0)
 
   return (
@@ -197,7 +202,7 @@ function App() {
         />
       ) : (
         <>
-          {currentPage === "home" && (
+          {(currentPage === "home" || currentPage === "search") && (
             <>
               <SearchBar
                 value={searchQuery}
@@ -205,46 +210,53 @@ function App() {
                 onSearch={handleSearch}
               />
 
-              {loading && (
-                <div style={{ textAlign: "center", padding: "4rem", color: "#aaa" }}>
-                  Cargando juegos...
-                </div>
-              )}
-
-              {error && (
-                <div style={{ textAlign: "center", padding: "4rem", color: "#f44" }}>
-                  {error}
-                </div>
-              )}
-
-              {!loading && !error && (
-                <>
-                  {!showSearchResults && featuredGame && (
-                    <HeroGame
-                      game={featuredGame}
+              {currentPage === "search" ? (
+                <div className="home-page">
+                  <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
+                    <button
+                      onClick={handleClearSearch}
+                      style={{ background: "none", border: "none", color: "#6bb8e8", cursor: "pointer", fontSize: "14px", padding: 0 }}
+                    >
+                      ← Volver
+                    </button>
+                    <p style={{ color: "#aaa", margin: 0 }}>
+                      {searching
+                        ? "Buscando..."
+                        : `${(searchResults ?? []).length} resultado${(searchResults ?? []).length !== 1 ? "s" : ""} para "${searchQuery}"`}
+                    </p>
+                  </div>
+                  {!searching && (
+                    <GameSection
+                      title="Resultados de búsqueda"
+                      games={searchResults ?? []}
+                      variant="recommended"
                       onAddToCart={handleAddToCart}
                       onSelectGame={handleSelectGame}
                     />
                   )}
-
-                  <div className="home-page">
-                    {showSearchResults ? (
-                      <>
-                        <p style={{ color: "#aaa", margin: "0 0 .5rem" }}>
-                          {searching
-                            ? "Buscando..."
-                            : `${displayedGames.length} resultado${displayedGames.length !== 1 ? "s" : ""} para "${searchQuery}"`}
-                        </p>
-                        <GameSection
-                          title="Resultados de búsqueda"
-                          games={displayedGames}
-                          variant="recommended"
+                </div>
+              ) : (
+                <>
+                  {loading && (
+                    <div style={{ textAlign: "center", padding: "4rem", color: "#aaa" }}>
+                      Cargando juegos...
+                    </div>
+                  )}
+                  {error && (
+                    <div style={{ textAlign: "center", padding: "4rem", color: "#f44" }}>
+                      {error}
+                    </div>
+                  )}
+                  {!loading && !error && (
+                    <>
+                      {featuredGame && (
+                        <HeroGame
+                          game={featuredGame}
                           onAddToCart={handleAddToCart}
                           onSelectGame={handleSelectGame}
                         />
-                      </>
-                    ) : (
-                      <>
+                      )}
+                      <div className="home-page">
                         {discountedGames.length > 0 && (
                           <GameSection
                             title="Ofertas"
@@ -268,9 +280,9 @@ function App() {
                           onAddToCart={handleAddToCart}
                           onSelectGame={handleSelectGame}
                         />
-                      </>
-                    )}
-                  </div>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </>
