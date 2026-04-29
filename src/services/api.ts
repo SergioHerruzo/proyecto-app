@@ -356,3 +356,36 @@ export async function removeGameFromCollection(collectionId: string, gameId: str
   })
   if (!res.ok) throw new Error(`Error ${res.status}`)
 }
+
+// --- Achievements API ---
+
+export interface AchievementResponse {
+  id: string
+  gameId: string
+  name: string
+  description: string
+  isUnlocked: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export async function getGameAchievements(
+  gameId: string,
+  pageNumber = 1,
+  pageSize = 50,
+): Promise<PaginatedResponse<AchievementResponse>> {
+  const params = new URLSearchParams()
+  params.set("PageNumber", String(pageNumber))
+  params.set("PageSize", String(pageSize))
+  const res = await fetch(`${BASE_URL}/games/${gameId}/achievements?${params}`)
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  return res.json()
+}
+
+export async function unlockAchievement(achievementId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/achievements/${achievementId}/unlock`, {
+    method: "POST",
+    headers: authHeaders(),
+  })
+  if (!res.ok && res.status !== 409) throw new Error(`Error ${res.status}`)
+}

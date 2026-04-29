@@ -234,3 +234,83 @@
   color: var(--text-4);
   line-height: 1.6;
 }
+
+/* ===== ACHIEVEMENTS TAB ===== */
+.lgd-achievement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lgd-achievement {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-1);
+}
+
+.lgd-achievement:last-child {
+  border-bottom: none;
+}
+
+.lgd-achievement--unlocked .lgd-achievement-name {
+  color: #ffd700;
+}
+
+.lgd-achievement-icon {
+  font-size: 1.6rem;
+  width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.lgd-achievement-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.lgd-achievement-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.lgd-achievement-desc {
+  font-size: 12px;
+  color: var(--text-5);
+}
+
+.lgd-achievement-btn {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--border-3);
+  color: var(--text-4);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.lgd-achievement-btn:hover:not(:disabled) {
+  border-color: #4a9eff;
+  color: #4a9eff;
+}
+
+.lgd-achievement-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.lgd-achievement-done {
+  font-size: 12px;
+  color: #ffd700;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
