@@ -1,6 +1,8 @@
 import '../styles/Profile.css'
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { AuthUser } from "../services/auth"
+import { getCurrentUser, type BasicUserResponse } from "../services/api"
+import EditProfileModal from "./EditProfileModal"
 
 interface Friend {
   id: number
@@ -59,6 +61,19 @@ export default function Profile({ authUser }: ProfileProps) {
   const [addError, setAddError] = useState("")
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
   const [showAchievements, setShowAchievements] = useState(false)
+  const [apiUser, setApiUser] = useState<BasicUserResponse | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
+
+  useEffect(() => {
+    if (!authUser) return
+    getCurrentUser()
+      .then(u => {
+        setApiUser(u)
+        setAvatarUrl(u.profilePicture?.mediumPictureUrl ?? null)
+      })
+      .catch(err => console.error('[Profile] getCurrentUser error:', err))
+  }, [authUser])
 
   const handleAddFriend = () => {
     const name = addInput.trim()
@@ -81,9 +96,24 @@ export default function Profile({ authUser }: ProfileProps) {
     <div className="profile-page">
       <div className="profile-main">
         <div className="profile-card">
-          <div className="profile-avatar" />
+          <div className="profile-avatar">
+            {avatarUrl
+              ? <img src={avatarUrl} alt="avatar" className="profile-avatar-img" onError={() => setAvatarUrl(null)} />
+              : null
+            }
+          </div>
           <div className="profile-info">
-            <h1 className="profile-username">{authUser?.username ?? "Invitado"}</h1>
+            <h1 className="profile-username">
+              {apiUser?.displayName ?? authUser?.username ?? "Invitado"}
+            </h1>
+            {apiUser && apiUser.displayName !== authUser?.username && (
+              <span className="profile-handle">@{authUser?.username}</span>
+            )}
+            {authUser && (
+              <button className="profile-edit-btn" onClick={() => setEditOpen(true)}>
+                Editar perfil
+              </button>
+            )}
           </div>
         </div>
 
@@ -167,6 +197,19 @@ export default function Profile({ authUser }: ProfileProps) {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Modal editar perfil */}
+      {editOpen && apiUser && (
+        <EditProfileModal
+          user={apiUser}
+          onClose={() => setEditOpen(false)}
+          onSaved={({ displayName, avatarUrl: newUrl }) => {
+            setApiUser(prev => prev ? { ...prev, displayName } : prev)
+            if (newUrl) setAvatarUrl(newUrl)
+            setEditOpen(false)
+          }}
+        />
       )}
 
       {/* Modal logros */}

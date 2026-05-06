@@ -1,4 +1,8 @@
-const BASE_URL = "http://localhost:5239"
+let BASE_URL = "http://localhost:5239"
+
+export function configure(baseUrl: string) {
+  BASE_URL = baseUrl
+}
 
 // --- Auth token ---
 
@@ -364,7 +368,7 @@ export interface AchievementResponse {
   gameId: string
   name: string
   description: string
-  isUnlocked: boolean
+  isUnlocked?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -388,4 +392,49 @@ export async function unlockAchievement(achievementId: string): Promise<void> {
     headers: authHeaders(),
   })
   if (!res.ok && res.status !== 409) throw new Error(`Error ${res.status}`)
+}
+
+// --- User Profile API ---
+
+export interface UserProfilePicture {
+  smallPictureUrl: string
+  mediumPictureUrl: string
+  largePictureUrl: string
+}
+
+export interface BasicUserResponse {
+  userId: string
+  displayName: string
+  profilePicture: UserProfilePicture | null
+  role: string
+}
+
+export async function getCurrentUser(): Promise<BasicUserResponse> {
+  const res = await fetch(`${BASE_URL}/users/me`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  return res.json()
+}
+
+export async function updateDisplayName(displayName: string): Promise<void> {
+  const form = new FormData()
+  form.append("DisplayName", displayName)
+  const res = await fetch(`${BASE_URL}/users/me`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: form,
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+}
+
+export async function updateProfilePicture(file: File): Promise<void> {
+  const form = new FormData()
+  form.append("ProfilePicture", file)
+  const res = await fetch(`${BASE_URL}/users/me/profile-picture`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: form,
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
 }

@@ -62,6 +62,22 @@
   color: #fff;
 }
 
+.lgd-report-btn {
+  background: transparent;
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  color: var(--text-5);
+  font-size: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.lgd-report-btn:hover {
+  border-color: #c0392b;
+  color: #e74c3c;
+}
+
 .lgd-stats {
   display: flex;
   gap: 32px;

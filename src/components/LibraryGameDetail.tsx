@@ -2,6 +2,7 @@ import '../styles/LibraryGameDetail.css'
 import { useState, useEffect } from "react"
 import type { Game } from "../types/games"
 import { getGameAchievements, unlockAchievement, type AchievementResponse } from "../services/api"
+import ReportModal from "./ReportModal"
 
 interface LibraryGameDetailProps {
   game: Game
@@ -21,6 +22,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
   const [loadingAchievements, setLoadingAchievements] = useState(false)
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set())
   const [unlockingId, setUnlockingId] = useState<string | null>(null)
+  const [reportOpen, setReportOpen] = useState(false)
 
   useEffect(() => {
     if (activeTab !== "logros" || achievements.length > 0) return
@@ -56,6 +58,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
       {/* Action bar */}
       <div className="lgd-actionbar">
         <button className="lgd-main-btn lgd-main-btn--play">▶ JUGAR</button>
+        <button className="lgd-report-btn" onClick={() => setReportOpen(true)}>⚑ Denunciar</button>
 
         <div className="lgd-stats">
           <div className="lgd-stat">
@@ -96,7 +99,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
         {activeTab === "logros" && (
           <div className="lgd-section-card">
             <span className="lgd-section-label">
-              LOGROS {achievements.length > 0 && `· ${unlockedIds.size} / ${achievements.length}`}
+              LOGROS {achievements.length > 0 && `· ${achievements.filter(a => a.isUnlocked || unlockedIds.has(a.id)).length} / ${achievements.length}`}
             </span>
 
             {loadingAchievements && (
@@ -192,6 +195,15 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
         )}
       </div>
 
+      {reportOpen && (
+        <ReportModal
+          gameName={game.title}
+          onClose={() => setReportOpen(false)}
+          onSubmit={(reason, description) => {
+            console.log('[Report]', { gameId: game.id, reason, description })
+          }}
+        />
+      )}
     </div>
   )
 }

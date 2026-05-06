@@ -1,6 +1,7 @@
 import '../styles/GameDetail.css'
 import { useState } from "react"
 import type { Game } from "../types/games"
+import ReportModal from "./ReportModal"
 
 interface GameDetailProps {
   game: Game
@@ -24,6 +25,7 @@ const mockFriendsWithGame = ["PlayerOne", "GamerX"]
 
 export default function GameDetail({ game, allGames, cartItems, onAddToCart, onBack, onSelectGame }: GameDetailProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [reportOpen, setReportOpen] = useState(false)
 
   const screenshots = getScreenshots(game)
   const inCart = cartItems.some(g => g.id === game.id)
@@ -160,6 +162,10 @@ export default function GameDetail({ game, allGames, cartItems, onAddToCart, onB
                 <span key={tag} className="detail-tag">{tag}</span>
               ))}
             </div>
+
+            <button className="detail-report-btn" onClick={() => setReportOpen(true)}>
+              Denunciar este juego
+            </button>
           </div>
         </div>
 
@@ -185,6 +191,16 @@ export default function GameDetail({ game, allGames, cartItems, onAddToCart, onB
         )}
 
       </div>
+
+      {reportOpen && (
+        <ReportModal
+          gameName={game.title}
+          onClose={() => setReportOpen(false)}
+          onSubmit={(reason, description) => {
+            console.log('[Report]', { gameId: game.id, reason, description })
+          }}
+        />
+      )}
     </div>
   )
 }

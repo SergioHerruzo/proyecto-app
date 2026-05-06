@@ -384,3 +384,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.detail-report-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-6);
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  transition: color 0.2s;
+}
+
+.detail-report-btn:hover { color: var(--text-4); }
