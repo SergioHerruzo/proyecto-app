@@ -11,14 +11,6 @@ interface Friend {
   game?: string
 }
 
-interface Achievement {
-  id: number
-  title: string
-  description: string
-  game: string
-  date: string
-}
-
 const mockFriends: Friend[] = [
   { id: 1, name: "PlayerOne", status: "online" },
   { id: 2, name: "GamerX", status: "playing", game: "Cyber Adventure" },
@@ -27,16 +19,6 @@ const mockFriends: Friend[] = [
   { id: 5, name: "DarkBlade99", status: "playing", game: "Dark Dungeon" },
   { id: 6, name: "StarWatcher", status: "offline" },
   { id: 7, name: "IronFist", status: "online" },
-]
-
-const mockAchievements: Achievement[] = [
-  { id: 1, title: "Primera sangre", description: "Derrota a tu primer enemigo.", game: "Cyber Adventure", date: "hace 2 días" },
-  { id: 2, title: "Sin rasguños", description: "Completa un nivel sin recibir daño.", game: "Dark Dungeon", date: "hace 3 días" },
-  { id: 3, title: "Explorador", description: "Descubre todos los mapas del mundo.", game: "Fantasy World", date: "hace 5 días" },
-  { id: 4, title: "Coleccionista", description: "Recoge 50 objetos distintos.", game: "Pixel Quest", date: "hace 1 semana" },
-  { id: 5, title: "Superviviente", description: "Sobrevive 10 noches seguidas.", game: "Space Survival", date: "hace 1 semana" },
-  { id: 6, title: "Maestro del combate", description: "Encadena 20 golpes sin fallar.", game: "Shadow Blade", date: "hace 2 semanas" },
-  { id: 7, title: "Velocista", description: "Completa una carrera en menos de 2 minutos.", game: "Storm Riders", date: "hace 2 semanas" },
 ]
 
 const statusLabel: Record<Friend["status"], string> = {
@@ -60,7 +42,6 @@ export default function Profile({ authUser }: ProfileProps) {
   const [addInput, setAddInput] = useState("")
   const [addError, setAddError] = useState("")
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
-  const [showAchievements, setShowAchievements] = useState(false)
   const [apiUser, setApiUser] = useState<BasicUserResponse | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [editOpen, setEditOpen] = useState(false)
@@ -121,11 +102,8 @@ export default function Profile({ authUser }: ProfileProps) {
           <div className="profile-stat-card">
             <div className="profile-stat-header">
               <h2 className="profile-stat-title">LOGROS</h2>
-              <button className="btn-ver-mas" onClick={() => setShowAchievements(true)}>
-                Ver más
-              </button>
             </div>
-            <div className="profile-stat-content" />
+            <p className="profile-stat-hint">Consulta tus logros dentro de cada juego en la Biblioteca.</p>
           </div>
         </div>
       </div>
@@ -212,30 +190,6 @@ export default function Profile({ authUser }: ProfileProps) {
         />
       )}
 
-      {/* Modal logros */}
-      {showAchievements && (
-        <div className="friend-modal-overlay" onClick={() => setShowAchievements(false)}>
-          <div className="achievements-modal" onClick={e => e.stopPropagation()}>
-            <div className="achievements-modal-header">
-              <h2 className="achievements-modal-title">Logros recientes</h2>
-              <button className="friend-modal-close" onClick={() => setShowAchievements(false)}>✕</button>
-            </div>
-
-            <ul className="achievements-list">
-              {mockAchievements.map(a => (
-                <li key={a.id} className="achievement-item">
-                  <div className="achievement-icon">🏆</div>
-                  <div className="achievement-info">
-                    <span className="achievement-title">{a.title}</span>
-                    <span className="achievement-description">{a.description}</span>
-                    <span className="achievement-game">{a.game} · {a.date}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

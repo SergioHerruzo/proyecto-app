@@ -20,6 +20,7 @@ import {
   addToCart,
   removeFromCart,
   checkoutCart,
+  getUserLibrary,
 } from "./services/api"
 import { restoreSession, logout } from "./services/auth"
 import type { AuthUser } from "./services/auth"
@@ -36,6 +37,8 @@ function App() {
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
   const [authUser, setAuthUser] = useState<AuthUser | null>(null)
   const [theme, setTheme] = useState<Theme>("dark")
+
+  const [ownedGameIds, setOwnedGameIds] = useState<Set<string>>(new Set())
 
   const [allGames, setAllGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
@@ -56,6 +59,15 @@ function App() {
     }
   }
 
+  const loadLibraryIds = async () => {
+    try {
+      const summaries = await getUserLibrary()
+      setOwnedGameIds(new Set(summaries.map(s => s.id)))
+    } catch {
+      // non-critical
+    }
+  }
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme)
   }, [theme])
@@ -69,6 +81,7 @@ function App() {
         setAuthUser(user)
         setAuthToken(user.accessToken)
         loadCartFromApi()
+        loadLibraryIds()
       }
     })
   }, [])
@@ -85,6 +98,7 @@ function App() {
     setAuthToken(user.accessToken)
     setAuthModalOpen(false)
     await loadCartFromApi()
+    await loadLibraryIds()
   }
 
   const handleSignOut = () => {
@@ -92,6 +106,7 @@ function App() {
     setAuthUser(null)
     setAuthToken(null)
     setCartItems([])
+    setOwnedGameIds(new Set())
     setCurrentPage("home")
   }
 
@@ -135,6 +150,7 @@ function App() {
       setAuthModalOpen(true)
       return
     }
+    if (ownedGameIds.has(game.id)) return
     if (cartItems.find(g => g.id === game.id)) return
     setCartItems(prev => [...prev, game])
     try { await addToCart(game.id) } catch { /* non-critical */ }
@@ -150,6 +166,7 @@ function App() {
   const handleCheckout = async () => {
     await checkoutCart()
     setCartItems([])
+    await loadLibraryIds()
     setCurrentPage(isTauri ? "library" : "home")
   }
 
@@ -169,7 +186,7 @@ function App() {
   return (
     <>
       <Header
-        activePage={currentPage}
+        activePage={currentPage === "search" ? "home" : currentPage}
         onNavigate={handleNavigate}
         cartCount={cartItems.length}
         isAuthenticated={!!authUser}
@@ -196,6 +213,7 @@ function App() {
           game={selectedGame}
           allGames={allGames}
           cartItems={cartItems}
+          ownedGameIds={ownedGameIds}
           onAddToCart={handleAddToCart}
           onBack={() => setSelectedGame(null)}
           onSelectGame={handleSelectGame}
@@ -230,6 +248,7 @@ function App() {
                       title="Resultados de búsqueda"
                       games={searchResults ?? []}
                       variant="recommended"
+                      ownedGameIds={ownedGameIds}
                       onAddToCart={handleAddToCart}
                       onSelectGame={handleSelectGame}
                     />
@@ -252,6 +271,7 @@ function App() {
                       {featuredGame && (
                         <HeroGame
                           game={featuredGame}
+                          ownedGameIds={ownedGameIds}
                           onAddToCart={handleAddToCart}
                           onSelectGame={handleSelectGame}
                         />
@@ -262,6 +282,7 @@ function App() {
                             title="Ofertas"
                             games={discountedGames}
                             variant="discount"
+                            ownedGameIds={ownedGameIds}
                             onAddToCart={handleAddToCart}
                             onSelectGame={handleSelectGame}
                           />
@@ -270,6 +291,7 @@ function App() {
                           title="Juegos disponibles"
                           games={allGames.slice(0, 6)}
                           variant="discount"
+                          ownedGameIds={ownedGameIds}
                           onAddToCart={handleAddToCart}
                           onSelectGame={handleSelectGame}
                         />
@@ -277,6 +299,7 @@ function App() {
                           title="Juegos recomendados"
                           games={allGames}
                           variant="recommended"
+                          ownedGameIds={ownedGameIds}
                           onAddToCart={handleAddToCart}
                           onSelectGame={handleSelectGame}
                         />

@@ -7,6 +7,7 @@ interface GameDetailProps {
   game: Game
   allGames: Game[]
   cartItems: Game[]
+  ownedGameIds: Set<string>
   onAddToCart: (game: Game) => void
   onBack: () => void
   onSelectGame: (game: Game) => void
@@ -23,11 +24,12 @@ function getScreenshots(game: Game): string[] {
 
 const mockFriendsWithGame = ["PlayerOne", "GamerX"]
 
-export default function GameDetail({ game, allGames, cartItems, onAddToCart, onBack, onSelectGame }: GameDetailProps) {
+export default function GameDetail({ game, allGames, cartItems, ownedGameIds, onAddToCart, onBack, onSelectGame }: GameDetailProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [reportOpen, setReportOpen] = useState(false)
 
   const screenshots = getScreenshots(game)
+  const isOwned = ownedGameIds.has(game.id)
   const inCart = cartItems.some(g => g.id === game.id)
   const discount = game.oldPrice && game.price !== undefined ? Math.round((1 - game.price / game.oldPrice) * 100) : null
   const similarGames = allGames
@@ -105,10 +107,11 @@ export default function GameDetail({ game, allGames, cartItems, onAddToCart, onB
                   <span className="detail-new-price">{game.price.toFixed(2)}€</span>
                 )}
                 <button
-                  className={`detail-buy-btn ${inCart ? "detail-buy-btn--in-cart" : ""}`}
-                  onClick={() => { if (!inCart) onAddToCart(game) }}
+                  className={`detail-buy-btn ${isOwned ? "detail-buy-btn--owned" : inCart ? "detail-buy-btn--in-cart" : ""}`}
+                  onClick={() => { if (!isOwned && !inCart) onAddToCart(game) }}
+                  disabled={isOwned}
                 >
-                  {inCart ? "En el carrito" : "Añadir al carro"}
+                  {isOwned ? "Ya tienes este juego" : inCart ? "En el carrito" : "Añadir al carro"}
                 </button>
               </div>
             </div>

@@ -4,18 +4,19 @@ import type { Game } from "../types/games"
 interface GameCardProps {
   game: Game
   variant?: "discount" | "recommended"
+  isOwned?: boolean
   onAddToCart?: (game: Game) => void
   onSelectGame?: (game: Game) => void
 }
 
-export default function GameCard({ game, variant = "recommended", onAddToCart, onSelectGame }: GameCardProps) {
+export default function GameCard({ game, variant = "recommended", isOwned = false, onAddToCart, onSelectGame }: GameCardProps) {
   return (
     <div className={`game-card game-card--${variant}`} onClick={() => onSelectGame?.(game)}>
       <div
         className="game-card-image"
         style={{ backgroundImage: `url(${game.image})` }}
       >
-        {variant === "discount" && (
+        {variant === "discount" && !isOwned && (
           <button className="cart-btn" title="Agregar al carrito" onClick={e => { e.stopPropagation(); onAddToCart?.(game) }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="21" r="1" />
@@ -23,6 +24,13 @@ export default function GameCard({ game, variant = "recommended", onAddToCart, o
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
           </button>
+        )}
+        {variant === "discount" && isOwned && (
+          <div className="cart-btn cart-btn--owned" title="Ya tienes este juego" onClick={e => e.stopPropagation()}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
         )}
         {variant === "recommended" && (
           <div className="platform-icon">

@@ -8,7 +8,6 @@
 
 .game-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .game-card-image {
@@ -41,8 +40,21 @@
 }
 
 .cart-btn:hover {
-  background-color: var(--bg-control-hover);
-  color: var(--text-1);
+  background-color: var(--blue-primary);
+  border-color: var(--blue-primary);
+  color: #fff;
+}
+
+.cart-btn--owned {
+  cursor: default;
+  background-color: rgba(30, 30, 30, 0.85);
+  color: #4caf50;
+  border-color: #4caf50;
+}
+
+.cart-btn--owned:hover {
+  background-color: rgba(30, 30, 30, 0.85);
+  color: #4caf50;
 }
 
 .platform-icon {

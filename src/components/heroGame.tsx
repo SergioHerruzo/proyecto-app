@@ -3,11 +3,14 @@ import type { Game } from "../types/games"
 
 interface HeroGameProps {
   game: Game
+  ownedGameIds?: Set<string>
   onAddToCart?: (game: Game) => void
   onSelectGame?: (game: Game) => void
 }
 
-export default function HeroGame({ game, onAddToCart, onSelectGame }: HeroGameProps) {
+export default function HeroGame({ game, ownedGameIds, onAddToCart, onSelectGame }: HeroGameProps) {
+  const isOwned = ownedGameIds?.has(game.id) ?? false
+
   return (
     <section className="hero" style={{ cursor: "pointer" }} onClick={() => onSelectGame?.(game)}>
       <div className="hero-content">
@@ -19,9 +22,10 @@ export default function HeroGame({ game, onAddToCart, onSelectGame }: HeroGamePr
           <div className="hero-buttons">
             <button
               className="btn-primary"
-              onClick={e => { e.stopPropagation(); onAddToCart?.(game) }}
+              disabled={isOwned}
+              onClick={e => { e.stopPropagation(); if (!isOwned) onAddToCart?.(game) }}
             >
-              {game.price !== undefined ? `Comprar - ${game.price.toFixed(2)}€` : "Comprar"}
+              {isOwned ? "Ya en tu biblioteca" : game.price !== undefined ? `Comprar - ${game.price.toFixed(2)}€` : "Comprar"}
             </button>
           </div>
         </div>

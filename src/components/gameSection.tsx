@@ -7,11 +7,12 @@ interface GameSectionProps {
   title: string
   games: Game[]
   variant?: "discount" | "recommended"
+  ownedGameIds?: Set<string>
   onAddToCart?: (game: Game) => void
   onSelectGame?: (game: Game) => void
 }
 
-export default function GameSection({ title, games, variant = "recommended", onAddToCart, onSelectGame }: GameSectionProps) {
+export default function GameSection({ title, games, variant = "recommended", ownedGameIds, onAddToCart, onSelectGame }: GameSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const visibleCount = 4
 
@@ -41,7 +42,7 @@ export default function GameSection({ title, games, variant = "recommended", onA
             >
               {games.map((game) => (
                 <div className="carousel-item" key={game.id}>
-                  <GameCard game={game} variant="discount" onAddToCart={onAddToCart} onSelectGame={onSelectGame} />
+                  <GameCard game={game} variant="discount" isOwned={ownedGameIds?.has(game.id) ?? false} onAddToCart={onAddToCart} onSelectGame={onSelectGame} />
                 </div>
               ))}
             </div>
@@ -66,7 +67,7 @@ export default function GameSection({ title, games, variant = "recommended", onA
       <h2 className="section-title">{title}</h2>
       <div className="games-grid">
         {games.map((game) => (
-          <GameCard key={game.id} game={game} variant="recommended" onAddToCart={onAddToCart} onSelectGame={onSelectGame} />
+          <GameCard key={game.id} game={game} variant="recommended" isOwned={ownedGameIds?.has(game.id) ?? false} onAddToCart={onAddToCart} onSelectGame={onSelectGame} />
         ))}
       </div>
     </section>

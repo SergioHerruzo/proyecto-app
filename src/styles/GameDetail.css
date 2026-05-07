@@ -21,18 +21,18 @@
 .breadcrumb-btn {
   background: transparent;
   border: none;
-  color: #6bb8e8;
+  color: var(--blue-link);
   font-size: 12px;
   padding: 0;
   cursor: pointer;
   transition: color 0.2s;
 }
 
-.breadcrumb-btn:hover { color: #9dd3f5; }
+.breadcrumb-btn:hover { color: var(--blue-link-hover); }
 
 .breadcrumb-sep { color: var(--border-4); }
 
-.breadcrumb-item { color: #6bb8e8; }
+.breadcrumb-item { color: var(--blue-link); }
 
 .breadcrumb-item--current { color: var(--text-4); }
 
@@ -115,7 +115,7 @@
   transition: border-color 0.15s;
 }
 
-.detail-thumb--active { border-color: #6bb8e8; }
+.detail-thumb--active { border-color: var(--blue-link); }
 .detail-thumb:hover:not(.detail-thumb--active) { border-color: var(--border-4); }
 
 .detail-actions {
@@ -125,7 +125,7 @@
 }
 
 .detail-action-wishlist {
-  background-color: #4a6fa5;
+  background-color: var(--blue-primary);
   border: none;
   color: #fff;
   border-radius: 4px;
@@ -136,8 +136,8 @@
   transition: background-color 0.2s;
 }
 
-.detail-action-wishlist:hover { background-color: #5a80b5; }
-.detail-action-wishlist--active { background-color: #2d5080; }
+.detail-action-wishlist:hover { background-color: var(--blue-hover); }
+.detail-action-wishlist--active { background-color: #1040b0; }
 
 .detail-action-btn {
   background-color: var(--bg-control);
@@ -218,6 +218,13 @@
   color: #6a9a30;
   cursor: default;
 }
+.detail-buy-btn--owned {
+  background-color: #1a2e1a;
+  color: #4caf50;
+  cursor: default;
+  opacity: 0.9;
+}
+.detail-buy-btn--owned:hover { background-color: #1a2e1a; }
 
 .detail-friends {
   background-color: var(--bg-raised);
@@ -256,7 +263,7 @@
 
 .detail-friend-name {
   font-size: 11px;
-  color: #6bb8e8;
+  color: var(--blue-link);
 }
 
 /* RIGHT */
@@ -306,8 +313,8 @@
 }
 
 .detail-meta-value { font-size: 12px; color: var(--text-3); }
-.detail-meta-positive { font-size: 12px; color: #6bb8e8; }
-.detail-meta-link { font-size: 12px; color: #6bb8e8; cursor: pointer; }
+.detail-meta-positive { font-size: 12px; color: var(--blue-link); }
+.detail-meta-link { font-size: 12px; color: var(--blue-link); cursor: pointer; }
 .detail-meta-link:hover { text-decoration: underline; }
 
 .detail-tags {
@@ -327,7 +334,7 @@
   transition: border-color 0.2s, color 0.2s;
 }
 
-.detail-tag:hover { border-color: #6bb8e8; color: #6bb8e8; }
+.detail-tag:hover { border-color: var(--blue-link); color: var(--blue-link); }
 
 /* Similar games */
 .detail-similar {

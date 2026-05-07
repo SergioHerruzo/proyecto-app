@@ -56,7 +56,8 @@
 }
 
 .auth-input:focus {
-  border-color: var(--border-4);
+  border-color: var(--blue-primary);
+  outline: none;
 }
 
 .auth-checkbox-label {
@@ -68,7 +69,7 @@
 
 .auth-checkbox-label input[type="checkbox"] {
   margin-top: 2px;
-  accent-color: #29b6f6;
+  accent-color: var(--blue-primary);
   flex-shrink: 0;
 }
 
@@ -79,7 +80,7 @@
 }
 
 .auth-submit {
-  background-color: #29b6f6;
+  background-color: var(--blue-primary);
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -92,7 +93,7 @@
 }
 
 .auth-submit:hover {
-  background-color: #0ea5e9;
+  background-color: var(--blue-hover);
 }
 
 .auth-forgot {

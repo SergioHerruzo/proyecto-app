@@ -121,6 +121,12 @@
   border-radius: 8px;
 }
 
+.profile-stat-hint {
+  font-size: 13px;
+  color: var(--text-6);
+  margin: 0;
+}
+
 /* ===== FRIENDS SIDEBAR ===== */
 .profile-sidebar {
   width: 260px;

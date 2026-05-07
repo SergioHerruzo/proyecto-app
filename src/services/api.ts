@@ -116,12 +116,13 @@ import type { Game } from "../types/games"
 
 export function mapApiGameListItem(item: GameListItemResponse): Game {
   const artwork = item.artworks?.[0]
+  const hasDiscount = item.discount > 0
   return {
     id: item.id,
     title: item.title,
-    price: item.price,
-    discount: item.discount > 0 ? item.discount : undefined,
-    oldPrice: item.discount > 0 ? item.price + item.discount : undefined,
+    price: hasDiscount ? item.price * (1 - item.discount / 100) : item.price,
+    discount: hasDiscount ? item.discount : undefined,
+    oldPrice: hasDiscount ? item.price : undefined,
     genres: [],
     image: artwork?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(item.title)}`,
@@ -131,14 +132,15 @@ export function mapApiGameListItem(item: GameListItemResponse): Game {
 export function mapApiGame(game: GameResponse): Game {
   const storePic = game.storePictures?.[0]
   const artworks = game.artworks ?? []
+  const hasDiscount = game.discount > 0
 
   return {
     id: game.id,
     title: game.title,
     description: game.description,
-    price: game.price,
-    discount: game.discount > 0 ? game.discount : undefined,
-    oldPrice: game.discount > 0 ? game.price + game.discount : undefined,
+    price: hasDiscount ? game.price * (1 - game.discount / 100) : game.price,
+    discount: hasDiscount ? game.discount : undefined,
+    oldPrice: hasDiscount ? game.price : undefined,
     genres: game.genres?.map(g => g.name) ?? [],
     developer: game.owner?.username,
     image: storePic?.mediumImageUrl
@@ -381,7 +383,9 @@ export async function getGameAchievements(
   const params = new URLSearchParams()
   params.set("PageNumber", String(pageNumber))
   params.set("PageSize", String(pageSize))
-  const res = await fetch(`${BASE_URL}/games/${gameId}/achievements?${params}`)
+  const res = await fetch(`${BASE_URL}/games/${gameId}/achievements?${params}`, {
+    headers: authHeaders(),
+  })
   if (!res.ok) throw new Error(`Error ${res.status}`)
   return res.json()
 }
