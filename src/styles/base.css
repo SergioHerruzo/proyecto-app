@@ -21,10 +21,10 @@
   --border-3: #252550;
   --border-4: #303060;
 
-  --blue-primary: #1a6fff;
-  --blue-hover: #2979ff;
-  --blue-link: #4a9eff;
-  --blue-link-hover: #7ab8ff;
+  --blue-primary: #7c3aed;
+  --blue-hover: #6d28d9;
+  --blue-link: #a78bfa;
+  --blue-link-hover: #c4b5fd;
 }
 
 [data-theme="light"] {

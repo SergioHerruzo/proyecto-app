@@ -16,6 +16,8 @@ import {
   mapApiGame,
   mapGameSummary,
   setAuthToken,
+  setCurrentUserId,
+  getCurrentUser,
   getCart,
   addToCart,
   removeFromCart,
@@ -74,6 +76,15 @@ function App() {
 
   const toggleTheme = () => setTheme(t => t === "dark" ? "light" : "dark")
 
+  const loadCurrentUserId = async () => {
+    try {
+      const profile = await getCurrentUser()
+      setCurrentUserId(profile.userId)
+    } catch {
+      // non-critical
+    }
+  }
+
   // Restore Cognito session on load
   useEffect(() => {
     restoreSession().then(user => {
@@ -82,6 +93,7 @@ function App() {
         setAuthToken(user.accessToken)
         loadCartFromApi()
         loadLibraryIds()
+        loadCurrentUserId()
       }
     })
   }, [])
@@ -99,12 +111,14 @@ function App() {
     setAuthModalOpen(false)
     await loadCartFromApi()
     await loadLibraryIds()
+    await loadCurrentUserId()
   }
 
   const handleSignOut = () => {
     logout()
     setAuthUser(null)
     setAuthToken(null)
+    setCurrentUserId(null)
     setCartItems([])
     setOwnedGameIds(new Set())
     setCurrentPage("home")
@@ -233,7 +247,7 @@ function App() {
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
                     <button
                       onClick={handleClearSearch}
-                      style={{ background: "none", border: "none", color: "#6bb8e8", cursor: "pointer", fontSize: "14px", padding: 0 }}
+                      style={{ background: "none", border: "none", color: "#a78bfa", cursor: "pointer", fontSize: "14px", padding: 0 }}
                     >
                       ← Volver
                     </button>

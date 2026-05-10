@@ -16,6 +16,18 @@ export function getAuthToken(): string | null {
   return authToken
 }
 
+// --- Current user identity ---
+
+let currentUserId: string | null = null
+
+export function setCurrentUserId(id: string | null) {
+  currentUserId = id
+}
+
+export function getCurrentUserId(): string | null {
+  return currentUserId
+}
+
 function authHeaders(): HeadersInit {
   return authToken ? { Authorization: `Bearer ${authToken}` } : {}
 }
@@ -371,19 +383,16 @@ export interface AchievementResponse {
   name: string
   description: string
   isUnlocked?: boolean
-  createdAt: string
-  updatedAt: string
+  unlockedAt?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export async function getGameAchievements(
   gameId: string,
-  pageNumber = 1,
-  pageSize = 50,
-): Promise<PaginatedResponse<AchievementResponse>> {
-  const params = new URLSearchParams()
-  params.set("PageNumber", String(pageNumber))
-  params.set("PageSize", String(pageSize))
-  const res = await fetch(`${BASE_URL}/games/${gameId}/achievements?${params}`, {
+  userId: string,
+): Promise<AchievementResponse[]> {
+  const res = await fetch(`${BASE_URL}/games/${gameId}/achievements/${userId}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error(`Error ${res.status}`)
@@ -391,11 +400,29 @@ export async function getGameAchievements(
 }
 
 export async function unlockAchievement(achievementId: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/achievements/${achievementId}/unlock`, {
+  const res = await fetch(`${BASE_URL}/games/${achievementId}/unlock`, {
     method: "POST",
     headers: authHeaders(),
   })
   if (!res.ok && res.status !== 409) throw new Error(`Error ${res.status}`)
+}
+
+// --- Game Builds (User) API ---
+
+export interface GameBuildAsUserListItem {
+  id: string
+  versioName: string  // note: backend has typo "VersioName" (missing 'n')
+  isReleaseBuild: boolean
+}
+
+export async function getGameBuildsAsUser(
+  gameId: string,
+): Promise<PaginatedResponse<GameBuildAsUserListItem>> {
+  const res = await fetch(`${BASE_URL}/games/${gameId}/builds`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  return res.json()
 }
 
 // --- User Profile API ---

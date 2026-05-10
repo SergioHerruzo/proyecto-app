@@ -57,8 +57,8 @@
 }
 
 .sidebar-game-item--active {
-  background-color: #1a3a5c;
-  border-left: 3px solid #4a9eff;
+  background-color: #1a0a40;
+  border-left: 3px solid #a78bfa;
 }
 
 .sidebar-game-thumb {
@@ -239,7 +239,7 @@
 }
 
 .collection-card--drag-over {
-  border: 2px solid #4a9eff !important;
+  border: 2px solid #a78bfa !important;
   box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
   transform: scale(1.03) translateY(-3px);
 }
@@ -297,7 +297,7 @@
 }
 
 .collection-create-input:focus {
-  border-color: #4a9eff;
+  border-color: #a78bfa;
 }
 
 .collection-create-actions {
@@ -322,7 +322,7 @@
 }
 
 .collection-create-btn--ok {
-  background-color: #4a9eff;
+  background-color: #a78bfa;
   color: #fff;
 }
 
@@ -350,7 +350,7 @@
 }
 
 .collection-drop-zone--active {
-  border-color: #4a9eff;
+  border-color: #a78bfa;
   background-color: rgba(74, 158, 255, 0.06);
 }
 
@@ -360,7 +360,7 @@
 }
 
 .collection-drop-zone--active .collection-drop-zone-label {
-  color: #4a9eff;
+  color: #a78bfa;
 }
 
 /* ===== COLLECTION EMPTY STATE ===== */

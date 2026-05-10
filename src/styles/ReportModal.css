@@ -108,8 +108,8 @@
 }
 
 .report-reason-btn--active {
-  border-color: #4a9eff;
-  background-color: rgba(74, 158, 255, 0.08);
+  border-color: #a78bfa;
+  background-color: rgba(167, 139, 250, 0.08);
   color: var(--text-1);
 }
 
@@ -123,8 +123,8 @@
 }
 
 .report-radio--active {
-  border-color: #4a9eff;
-  background-color: #4a9eff;
+  border-color: #a78bfa;
+  background-color: #a78bfa;
 }
 
 .report-input {

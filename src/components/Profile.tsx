@@ -1,8 +1,16 @@
 import '../styles/Profile.css'
 import { useState, useEffect } from "react"
 import type { AuthUser } from "../services/auth"
-import { getCurrentUser, type BasicUserResponse } from "../services/api"
+import {
+  getCurrentUser,
+  getUserLibrary,
+  getGameAchievements,
+  type BasicUserResponse,
+  type AchievementResponse,
+} from "../services/api"
 import EditProfileModal from "./EditProfileModal"
+
+type RecentAchievement = AchievementResponse & { gameTitle: string }
 
 interface Friend {
   id: number
@@ -45,6 +53,39 @@ export default function Profile({ authUser }: ProfileProps) {
   const [apiUser, setApiUser] = useState<BasicUserResponse | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [editOpen, setEditOpen] = useState(false)
+  const [recentAchievements, setRecentAchievements] = useState<RecentAchievement[]>([])
+  const [loadingAchievements, setLoadingAchievements] = useState(false)
+
+  const loadRecentAchievements = async (userId: string) => {
+    setLoadingAchievements(true)
+    try {
+      const library = await getUserLibrary()
+      const toCheck = library.slice(0, 8)
+      const results = await Promise.allSettled(
+        toCheck.map(game =>
+          getGameAchievements(game.id, userId).then(list =>
+            list
+              .filter(a => a.isUnlocked)
+              .map(a => ({ ...a, gameTitle: game.title }))
+          )
+        )
+      )
+      const all: RecentAchievement[] = results
+        .filter((r): r is PromiseFulfilledResult<RecentAchievement[]> => r.status === "fulfilled")
+        .flatMap(r => r.value)
+
+      all.sort((a, b) => {
+        const da = a.unlockedAt ? new Date(a.unlockedAt).getTime() : 0
+        const db = b.unlockedAt ? new Date(b.unlockedAt).getTime() : 0
+        return db - da
+      })
+      setRecentAchievements(all.slice(0, 5))
+    } catch {
+      // non-critical
+    } finally {
+      setLoadingAchievements(false)
+    }
+  }
 
   useEffect(() => {
     if (!authUser) return
@@ -52,6 +93,7 @@ export default function Profile({ authUser }: ProfileProps) {
       .then(u => {
         setApiUser(u)
         setAvatarUrl(u.profilePicture?.mediumPictureUrl ?? null)
+        loadRecentAchievements(u.userId)
       })
       .catch(err => console.error('[Profile] getCurrentUser error:', err))
   }, [authUser])
@@ -101,9 +143,42 @@ export default function Profile({ authUser }: ProfileProps) {
         <div className="profile-stats">
           <div className="profile-stat-card">
             <div className="profile-stat-header">
-              <h2 className="profile-stat-title">LOGROS</h2>
+              <h2 className="profile-stat-title">LOGROS RECIENTES</h2>
+              {recentAchievements.length > 0 && (
+                <span className="profile-achievements-count">{recentAchievements.length}</span>
+              )}
             </div>
-            <p className="profile-stat-hint">Consulta tus logros dentro de cada juego en la Biblioteca.</p>
+
+            {loadingAchievements && (
+              <p className="profile-stat-hint">Cargando logros...</p>
+            )}
+
+            {!loadingAchievements && recentAchievements.length === 0 && (
+              <div className="profile-achievements-empty">
+                <span className="profile-achievements-empty-icon">🏆</span>
+                <p className="profile-achievements-empty-text">Aún no has desbloqueado ningún logro</p>
+              </div>
+            )}
+
+            {!loadingAchievements && recentAchievements.length > 0 && (
+              <ul className="profile-achievements-list">
+                {recentAchievements.map(a => (
+                  <li key={a.id} className="achievement-item">
+                    <span className="achievement-icon">🏆</span>
+                    <div className="achievement-info">
+                      <span className="achievement-title">{a.name}</span>
+                      <span className="achievement-description">{a.description}</span>
+                      <span className="achievement-game">
+                        {a.gameTitle}
+                        {a.unlockedAt && (
+                          <> · {new Date(a.unlockedAt).toLocaleDateString("es-ES")}</>
+                        )}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>
