@@ -19,6 +19,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::get_build_preview,
             commands::get_installed_games,
             commands::download_build,
             commands::launch_game,

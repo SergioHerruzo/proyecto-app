@@ -1,0 +1,195 @@
+.icm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.icm-panel {
+  background: var(--bg-surface, #1e1e2e);
+  border: 1px solid var(--border-1, #333);
+  border-radius: 12px;
+  width: 420px;
+  max-width: calc(100vw - 2rem);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.icm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-1, #333);
+}
+
+.icm-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-1, #fff);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.icm-close {
+  background: none;
+  border: none;
+  color: var(--text-5, #888);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.icm-close:hover {
+  color: var(--text-1, #fff);
+}
+
+.icm-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.icm-game-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-1, #fff);
+  margin: 0;
+}
+
+.icm-version {
+  font-size: 0.85rem;
+  color: var(--text-4, #aaa);
+  margin: 0;
+}
+
+.icm-version strong {
+  color: var(--text-2, #ddd);
+}
+
+.icm-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-4, #aaa);
+  padding: 0.5rem 0;
+}
+
+.icm-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-1, #444);
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: icm-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes icm-spin {
+  to { transform: rotate(360deg); }
+}
+
+.icm-error {
+  font-size: 0.82rem;
+  color: #f87171;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.icm-info-grid {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--bg-raised, #252535);
+  border-radius: 8px;
+  border: 1px solid var(--border-1, #333);
+}
+
+.icm-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.icm-info-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.icm-info-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-5, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.icm-info-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-1, #fff);
+}
+
+.icm-hint {
+  font-size: 0.78rem;
+  color: var(--text-6, #666);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.icm-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-1, #333);
+}
+
+.icm-btn {
+  padding: 0.55rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: filter 0.15s, opacity 0.15s;
+}
+
+.icm-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.icm-btn--cancel {
+  background: transparent;
+  border: 1px solid var(--border-2, #444);
+  color: var(--text-4, #aaa);
+}
+
+.icm-btn--cancel:hover:not(:disabled) {
+  border-color: var(--text-4, #aaa);
+  color: var(--text-1, #fff);
+}
+
+.icm-btn--confirm {
+  background: #a78bfa;
+  color: #fff;
+}
+
+.icm-btn--confirm:hover:not(:disabled) {
+  filter: brightness(1.15);
+}

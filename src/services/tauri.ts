@@ -23,6 +23,11 @@ export interface DownloadProgress {
   error?: string
 }
 
+export interface BuildPreview {
+  fileCount: number
+  totalBytes: number
+}
+
 export interface DownloadBuildParams {
   gameId: string
   gameTitle: string
@@ -33,6 +38,9 @@ export interface DownloadBuildParams {
   authToken: string
   apiBaseUrl: string
 }
+
+export const getBuildPreview = (manifestUrl: string, authToken: string): Promise<BuildPreview> =>
+  invoke("get_build_preview", { manifestUrl, authToken })
 
 export const getInstalledGames = (): Promise<Record<string, InstallInfo>> =>
   invoke("get_installed_games")

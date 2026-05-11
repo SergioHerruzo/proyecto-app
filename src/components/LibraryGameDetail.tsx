@@ -12,7 +12,10 @@ import {
   type GameBuildAsUserListItem,
   type GameBuildUserResponse,
 } from "../services/api"
+import { getBuildPreview, type BuildPreview } from "../services/tauri"
+import { getAuthToken } from "../services/api"
 import { useDownloads } from "../context/DownloadContext"
+import InstallConfirmModal from "./InstallConfirmModal"
 import ReportModal from "./ReportModal"
 
 interface LibraryGameDetailProps {
@@ -53,6 +56,13 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
 
   const [actionError, setActionError] = useState<string | null>(null)
   const [uninstalling, setUninstalling] = useState(false)
+
+  // Install confirmation modal state
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingBuild, setPendingBuild] = useState<GameBuildUserResponse | null>(null)
+  const [preview, setPreview] = useState<BuildPreview | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewError, setPreviewError] = useState<string | null>(null)
 
   const installedInfo = installedGames[game.id] ?? null
   const downloadProgress = downloads[game.id] ?? null
@@ -105,10 +115,32 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
     setActionError(null)
     try {
       const buildDetail: GameBuildUserResponse = await getGameBuildById(releaseBuild.id)
-      await startDownload(game, buildDetail)
+      // Open confirmation modal and fetch preview in parallel
+      setPendingBuild(buildDetail)
+      setPreview(null)
+      setPreviewError(null)
+      setPreviewLoading(true)
+      setConfirmOpen(true)
+      const token = getAuthToken() ?? ""
+      getBuildPreview(buildDetail.manifestUrl, token)
+        .then((p) => setPreview(p))
+        .catch((e: unknown) => setPreviewError(e instanceof Error ? e.message : String(e)))
+        .finally(() => setPreviewLoading(false))
     } catch (e: unknown) {
       setActionError(e instanceof Error ? e.message : String(e))
     }
+  }
+
+  async function handleConfirmInstall() {
+    if (!pendingBuild) return
+    setConfirmOpen(false)
+    try {
+      await startDownload(game, pendingBuild)
+    } catch (e: unknown) {
+      setActionError(e instanceof Error ? e.message : String(e))
+    }
+    setPendingBuild(null)
+    setPreview(null)
   }
 
   async function handlePlay() {
@@ -447,6 +479,18 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
           </div>
         )}
       </div>
+
+      {confirmOpen && pendingBuild && (
+        <InstallConfirmModal
+          gameTitle={game.title}
+          versionName={pendingBuild.versionName}
+          preview={preview}
+          loading={previewLoading}
+          error={previewError}
+          onConfirm={handleConfirmInstall}
+          onCancel={() => { setConfirmOpen(false); setPendingBuild(null) }}
+        />
+      )}
 
       {reportOpen && (
         <ReportModal

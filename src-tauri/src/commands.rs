@@ -1,9 +1,10 @@
 use crate::downloader::{DownloadParams, DownloadProgress, DownloadStatus, run_download};
 use crate::install_state::{game_data_dir, game_files_dir, load_install_info, InstallInfo};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 pub struct DownloadManagerState {
     pub downloads: Arc<Mutex<HashMap<String, DownloadProgress>>>,
@@ -18,6 +19,57 @@ impl DownloadManagerState {
         }
     }
 }
+
+// ---- Build preview (for confirmation dialog) ----
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildPreview {
+    pub file_count: usize,
+    pub total_bytes: u64,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct PreviewFile {
+    size: u64,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct PreviewManifest {
+    files: Vec<PreviewFile>,
+}
+
+#[tauri::command]
+pub async fn get_build_preview(
+    manifest_url: String,
+    auth_token: String,
+) -> Result<BuildPreview, String> {
+    let client = reqwest::Client::new();
+    let resp = client
+        .get(&manifest_url)
+        .header("Authorization", format!("Bearer {}", auth_token))
+        .send()
+        .await
+        .map_err(|e| format!("Error al obtener manifest: {}", e))?;
+
+    if !resp.status().is_success() {
+        return Err(format!("Manifest devolvió estado {}", resp.status()));
+    }
+
+    let manifest: PreviewManifest = resp
+        .json()
+        .await
+        .map_err(|e| format!("Error al parsear manifest: {}", e))?;
+
+    Ok(BuildPreview {
+        file_count: manifest.files.len(),
+        total_bytes: manifest.files.iter().map(|f| f.size).sum(),
+    })
+}
+
+// ---- Installed games ----
 
 #[tauri::command]
 pub async fn get_installed_games(
@@ -81,6 +133,24 @@ pub async fn download_build(
 
     let downloads_arc = Arc::clone(&state.downloads);
 
+    // Emit Queued immediately so the frontend shows feedback right away
+    let queued = DownloadProgress {
+        game_id: game_id.clone(),
+        build_id: build_id.clone(),
+        game_title: game_title.clone(),
+        total_bytes: 0,
+        downloaded_bytes: 0,
+        total_files: 0,
+        completed_files: 0,
+        status: DownloadStatus::Queued,
+        error: None,
+    };
+    {
+        let mut map = downloads_arc.lock().unwrap();
+        map.insert(game_id.clone(), queued.clone());
+    }
+    let _ = app.emit("download-progress", &queued);
+
     let params = DownloadParams {
         game_id: game_id.clone(),
         game_title,
@@ -96,15 +166,37 @@ pub async fn download_build(
     let cancel_clone = cancel_token.clone();
     let state_handle = app.state::<DownloadManagerState>();
     let cancel_tokens_arc = Arc::clone(&state_handle.cancel_tokens);
+    let downloads_for_error = Arc::clone(&downloads_arc);
+    let app_for_error = app.clone();
 
     tauri::async_runtime::spawn(async move {
         let result = run_download(app_clone, params, cancel_clone.clone(), downloads_arc).await;
 
         if let Err(ref e) = result {
             log::error!("Download error for {}: {}", game_id, e);
+            // Emit error if run_download failed before emitting its own error event
+            let mut map = downloads_for_error.lock().unwrap();
+            if let Some(p) = map.get(&game_id).cloned() {
+                if p.status == DownloadStatus::Queued || p.status == DownloadStatus::Downloading {
+                    let is_cancelled = cancel_clone.load(Ordering::Relaxed)
+                        || e.contains("Cancelled");
+                    let error_p = DownloadProgress {
+                        status: if is_cancelled {
+                            DownloadStatus::Cancelled
+                        } else {
+                            DownloadStatus::Error
+                        },
+                        error: Some(e.clone()),
+                        ..p
+                    };
+                    map.insert(game_id.clone(), error_p.clone());
+                    drop(map);
+                    let _ = app_for_error.emit("download-progress", &error_p);
+                }
+            }
         }
 
-        // Clean up cancel token after completion
+        // Clean up cancel token
         let mut tokens = cancel_tokens_arc.lock().unwrap();
         tokens.remove(&game_id);
     });
