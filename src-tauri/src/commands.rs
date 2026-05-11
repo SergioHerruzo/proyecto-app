@@ -141,8 +141,8 @@ pub async fn launch_game(app: AppHandle, game_id: String) -> Result<(), String> 
 #[tauri::command]
 pub async fn get_downloads_state(
     state: State<'_, DownloadManagerState>,
-) -> HashMap<String, DownloadProgress> {
-    state.downloads.lock().unwrap().clone()
+) -> Result<HashMap<String, DownloadProgress>, String> {
+    Ok(state.downloads.lock().unwrap().clone())
 }
 
 #[tauri::command]
