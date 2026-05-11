@@ -446,3 +446,105 @@
   padding: 2px 7px;
   text-transform: uppercase;
 }
+
+.lgd-build-badge--installed {
+  color: #34d399;
+  border-color: #34d399;
+}
+
+/* ===== INSTALL BUTTON ===== */
+.lgd-main-btn--install {
+  background-color: #a78bfa;
+  color: #fff;
+}
+
+.lgd-main-btn--cancel {
+  background-color: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--text-4);
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+.lgd-main-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ===== DOWNLOAD PROGRESS IN ACTION BAR ===== */
+.lgd-download-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  max-width: 340px;
+}
+
+.lgd-download-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.lgd-download-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.lgd-download-bytes {
+  font-size: 11px;
+  color: var(--text-5);
+  white-space: nowrap;
+}
+
+.lgd-download-bar-track {
+  width: 100%;
+  height: 4px;
+  background: var(--border-1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.lgd-download-bar-fill {
+  height: 100%;
+  background: #a78bfa;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ===== ACTION ERROR ===== */
+.lgd-action-error {
+  font-size: 12px;
+  color: #f87171;
+  max-width: 280px;
+  word-break: break-word;
+}
+
+/* ===== UNINSTALL ===== */
+.lgd-uninstall-row {
+  padding-top: 8px;
+  border-top: 1px solid var(--border-1);
+}
+
+.lgd-uninstall-btn {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.lgd-uninstall-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+.lgd-uninstall-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

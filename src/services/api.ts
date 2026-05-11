@@ -4,6 +4,10 @@ export function configure(baseUrl: string) {
   BASE_URL = baseUrl
 }
 
+export function getBaseUrl(): string {
+  return BASE_URL
+}
+
 // --- Auth token ---
 
 let authToken: string | null = null
@@ -415,10 +419,43 @@ export interface GameBuildAsUserListItem {
   isReleaseBuild: boolean
 }
 
+export interface GameBuildUserResponse {
+  buildId: string
+  versionName: string
+  manifestUrl: string
+  executableFilePath: string
+  isReleaseBuild: boolean
+}
+
+export interface GameFileUserResponse {
+  id: string
+  relativePath: string
+  downloadUrl: string
+  size: number
+  hash: string
+  hashAlgorithm: string
+}
+
 export async function getGameBuildsAsUser(
   gameId: string,
 ): Promise<PaginatedResponse<GameBuildAsUserListItem>> {
   const res = await fetch(`${BASE_URL}/games/${gameId}/builds`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  return res.json()
+}
+
+export async function getGameBuildById(buildId: string): Promise<GameBuildUserResponse> {
+  const res = await fetch(`${BASE_URL}/game-builds/${buildId}`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  return res.json()
+}
+
+export async function getGameBuildFile(fileId: string): Promise<GameFileUserResponse> {
+  const res = await fetch(`${BASE_URL}/game-builds/files/${fileId}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error(`Error ${res.status}`)

@@ -15,6 +15,8 @@ interface HeaderProps {
   theme?: Theme
   onToggleTheme?: () => void
   isDesktop?: boolean
+  activeDownloads?: number
+  onToggleDownloads?: () => void
 }
 
 export default function Header({
@@ -29,6 +31,8 @@ export default function Header({
   theme = "dark",
   onToggleTheme,
   isDesktop = false,
+  activeDownloads = 0,
+  onToggleDownloads,
 }: HeaderProps) {
   return (
     <header className="header">
@@ -87,6 +91,19 @@ export default function Header({
           >
             ⬇ Descargar
           </a>
+        )}
+
+        {isDesktop && isAuthenticated && (
+          <button
+            className="downloads-btn"
+            onClick={onToggleDownloads}
+            title="Ver descargas"
+          >
+            ↓
+            {activeDownloads > 0 && (
+              <span className="downloads-badge">{activeDownloads}</span>
+            )}
+          </button>
         )}
 
         <button

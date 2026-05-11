@@ -5,11 +5,14 @@ import {
   getGameAchievements,
   unlockAchievement,
   getGameBuildsAsUser,
+  getGameBuildById,
   getCurrentUser,
   getCurrentUserId,
   type AchievementResponse,
   type GameBuildAsUserListItem,
+  type GameBuildUserResponse,
 } from "../services/api"
+import { useDownloads } from "../context/DownloadContext"
 import ReportModal from "./ReportModal"
 
 interface LibraryGameDetailProps {
@@ -25,9 +28,18 @@ const tabs: { id: Tab; label: string }[] = [
   { id: "amigos",    label: "Amigos" },
 ]
 
-const BUILD_VERSION_KEY = (gameId: string) => `indie_last_build_${gameId}`
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B"
+  const k = 1024
+  const sizes = ["B", "KB", "MB", "GB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+}
 
 export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
+  const { installedGames, downloads, startDownload, cancelDownload, launchGame, uninstallGame } =
+    useDownloads()
+
   const [activeTab, setActiveTab] = useState<Tab>("info")
   const [achievements, setAchievements] = useState<AchievementResponse[]>([])
   const [loadingAchievements, setLoadingAchievements] = useState(false)
@@ -38,11 +50,22 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
   const [builds, setBuilds] = useState<GameBuildAsUserListItem[]>([])
   const [loadingBuilds, setLoadingBuilds] = useState(false)
   const [buildsError, setBuildsError] = useState<string | null>(null)
-  const [acknowledgedBuildId, setAcknowledgedBuildId] = useState<string | null>(null)
 
-  useEffect(() => {
-    setAcknowledgedBuildId(localStorage.getItem(BUILD_VERSION_KEY(game.id)))
-  }, [game.id])
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [uninstalling, setUninstalling] = useState(false)
+
+  const installedInfo = installedGames[game.id] ?? null
+  const downloadProgress = downloads[game.id] ?? null
+  const isDownloading =
+    downloadProgress?.status === "downloading" || downloadProgress?.status === "queued"
+
+  const releaseBuild = builds.find((b) => b.isReleaseBuild) ?? null
+  const hasUpdate =
+    releaseBuild !== null &&
+    installedInfo !== null &&
+    installedInfo.buildId !== releaseBuild.id
+
+  const isInstalled = installedInfo !== null
 
   useEffect(() => {
     if (activeTab !== "logros") return
@@ -50,20 +73,18 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
 
     const userId = getCurrentUserId()
     if (!userId) {
+      setLoadingAchievements(true)
       getCurrentUser()
-        .then(profile => {
-          return getGameAchievements(game.id, profile.userId)
-        })
-        .then(list => setAchievements(list))
+        .then((profile) => getGameAchievements(game.id, profile.userId))
+        .then((list) => setAchievements(list))
         .catch(console.error)
         .finally(() => setLoadingAchievements(false))
-      setLoadingAchievements(true)
       return
     }
 
     setLoadingAchievements(true)
     getGameAchievements(game.id, userId)
-      .then(list => setAchievements(list))
+      .then((list) => setAchievements(list))
       .catch(console.error)
       .finally(() => setLoadingAchievements(false))
   }, [activeTab, game.id, achievements.length])
@@ -75,31 +96,63 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
     setLoadingBuilds(true)
     setBuildsError(null)
     getGameBuildsAsUser(game.id)
-      .then(page => setBuilds(page.items))
+      .then((page) => setBuilds(page.items))
       .catch(() => setBuildsError("No se pudieron cargar las versiones."))
       .finally(() => setLoadingBuilds(false))
   }, [activeTab, game.id, builds.length])
 
-  const releaseBuild = builds.find(b => b.isReleaseBuild) ?? null
-  const hasUpdate = releaseBuild !== null && acknowledgedBuildId !== releaseBuild.id
-
-  function handleAcknowledgeUpdate() {
+  async function handleInstallOrUpdate() {
     if (!releaseBuild) return
-    localStorage.setItem(BUILD_VERSION_KEY(game.id), releaseBuild.id)
-    setAcknowledgedBuildId(releaseBuild.id)
+    setActionError(null)
+    try {
+      const buildDetail: GameBuildUserResponse = await getGameBuildById(releaseBuild.id)
+      await startDownload(game, buildDetail)
+    } catch (e: unknown) {
+      setActionError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  async function handlePlay() {
+    setActionError(null)
+    try {
+      await launchGame(game.id)
+    } catch (e: unknown) {
+      setActionError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  async function handleCancel() {
+    await cancelDownload(game.id)
+  }
+
+  async function handleUninstall() {
+    setUninstalling(true)
+    setActionError(null)
+    try {
+      await uninstallGame(game.id)
+    } catch (e: unknown) {
+      setActionError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setUninstalling(false)
+    }
   }
 
   async function handleUnlock(achievementId: string) {
     setUnlockingId(achievementId)
     try {
       await unlockAchievement(achievementId)
-      setUnlockedIds(prev => new Set(prev).add(achievementId))
+      setUnlockedIds((prev) => new Set(prev).add(achievementId))
     } catch (e) {
       console.error(e)
     } finally {
       setUnlockingId(null)
     }
   }
+
+  const dlPct =
+    downloadProgress && downloadProgress.totalBytes > 0
+      ? Math.round((downloadProgress.downloadedBytes / downloadProgress.totalBytes) * 100)
+      : 0
 
   return (
     <div className="lgd-wrapper">
@@ -113,13 +166,55 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
 
       {/* Action bar */}
       <div className="lgd-actionbar">
-        <button className="lgd-main-btn lgd-main-btn--play">▶ JUGAR</button>
-        {hasUpdate && (
-          <button className="lgd-main-btn lgd-main-btn--update" onClick={handleAcknowledgeUpdate}>
-            ↑ ACTUALIZAR · {releaseBuild!.versioName}
-          </button>
+        {isDownloading ? (
+          <div className="lgd-download-progress">
+            <div className="lgd-download-info">
+              <span className="lgd-download-label">
+                {downloadProgress!.status === "queued" ? "En cola..." : `Descargando... ${dlPct}%`}
+              </span>
+              {downloadProgress!.totalBytes > 0 && (
+                <span className="lgd-download-bytes">
+                  {formatBytes(downloadProgress!.downloadedBytes)} / {formatBytes(downloadProgress!.totalBytes)}
+                </span>
+              )}
+            </div>
+            <div className="lgd-download-bar-track">
+              <div className="lgd-download-bar-fill" style={{ width: `${dlPct}%` }} />
+            </div>
+            <button className="lgd-main-btn lgd-main-btn--cancel" onClick={handleCancel}>
+              ✕ Cancelar
+            </button>
+          </div>
+        ) : (
+          <>
+            {isInstalled && (
+              <button className="lgd-main-btn lgd-main-btn--play" onClick={handlePlay}>
+                ▶ JUGAR
+              </button>
+            )}
+            {!isInstalled && releaseBuild && (
+              <button className="lgd-main-btn lgd-main-btn--install" onClick={handleInstallOrUpdate}>
+                ⬇ INSTALAR
+              </button>
+            )}
+            {isInstalled && hasUpdate && releaseBuild && (
+              <button className="lgd-main-btn lgd-main-btn--update" onClick={handleInstallOrUpdate}>
+                ↑ ACTUALIZAR · {releaseBuild.versioName}
+              </button>
+            )}
+            {!releaseBuild && !isInstalled && (
+              <button className="lgd-main-btn lgd-main-btn--play" disabled>
+                Sin versión disponible
+              </button>
+            )}
+          </>
         )}
+
         <button className="lgd-report-btn" onClick={() => setReportOpen(true)}>⚑ Denunciar</button>
+
+        {actionError && (
+          <span className="lgd-action-error">{actionError}</span>
+        )}
 
         <div className="lgd-stats">
           <div className="lgd-stat">
@@ -134,14 +229,14 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
             <span className="lgd-stat-label">LOGROS</span>
             <span className="lgd-stat-value">
               {achievements.length > 0
-              ? `${achievements.filter(a => a.isUnlocked || unlockedIds.has(a.id)).length} / ${achievements.length}`
-              : "—"}
+                ? `${achievements.filter((a) => a.isUnlocked || unlockedIds.has(a.id)).length} / ${achievements.length}`
+                : "—"}
             </span>
           </div>
-          {releaseBuild && (
+          {installedInfo && (
             <div className="lgd-stat">
               <span className="lgd-stat-label">VERSIÓN</span>
-              <span className="lgd-stat-value">{releaseBuild.versioName}</span>
+              <span className="lgd-stat-value">{installedInfo.versionName}</span>
             </div>
           )}
         </div>
@@ -149,7 +244,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
 
       {/* Tabs */}
       <div className="lgd-tabs">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             className={`lgd-tab ${activeTab === tab.id ? "lgd-tab--active" : ""}`}
@@ -165,7 +260,9 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
         {activeTab === "logros" && (
           <div className="lgd-section-card">
             <span className="lgd-section-label">
-              LOGROS {achievements.length > 0 && `· ${achievements.filter(a => a.isUnlocked || unlockedIds.has(a.id)).length} / ${achievements.length}`}
+              LOGROS{" "}
+              {achievements.length > 0 &&
+                `· ${achievements.filter((a) => a.isUnlocked || unlockedIds.has(a.id)).length} / ${achievements.length}`}
             </span>
 
             {loadingAchievements && (
@@ -184,17 +281,21 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
 
             {!loadingAchievements && achievements.length > 0 && (
               <div className="lgd-achievement-list">
-                {achievements.map(a => {
+                {achievements.map((a) => {
                   const unlocked = a.isUnlocked || unlockedIds.has(a.id)
                   return (
-                    <div key={a.id} className={`lgd-achievement${unlocked ? " lgd-achievement--unlocked" : ""}`}>
+                    <div
+                      key={a.id}
+                      className={`lgd-achievement${unlocked ? " lgd-achievement--unlocked" : ""}`}
+                    >
                       <div className="lgd-achievement-icon">{unlocked ? "🏆" : "🔒"}</div>
                       <div className="lgd-achievement-info">
                         <span className="lgd-achievement-name">{a.name}</span>
                         <span className="lgd-achievement-desc">{a.description}</span>
                         {unlocked && a.unlockedAt && (
                           <span className="lgd-achievement-date">
-                            Desbloqueado el {new Date(a.unlockedAt).toLocaleDateString("es-ES")}
+                            Desbloqueado el{" "}
+                            {new Date(a.unlockedAt).toLocaleDateString("es-ES")}
                           </span>
                         )}
                       </div>
@@ -236,7 +337,9 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
               <div className="lgd-empty-state">
                 <span className="lgd-empty-icon">📦</span>
                 <p className="lgd-empty-title">Sin versiones publicadas</p>
-                <p className="lgd-empty-sub">El desarrollador aún no ha publicado ninguna versión</p>
+                <p className="lgd-empty-sub">
+                  El desarrollador aún no ha publicado ninguna versión
+                </p>
               </div>
             )}
 
@@ -247,27 +350,50 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
                     <div className="lgd-update-info">
                       <span className="lgd-update-icon">↑</span>
                       <div>
-                        <span className="lgd-update-title">Nueva versión disponible: {releaseBuild.versioName}</span>
-                        <span className="lgd-update-sub">Una actualización está lista para instalar</span>
+                        <span className="lgd-update-title">
+                          Nueva versión disponible: {releaseBuild.versioName}
+                        </span>
+                        <span className="lgd-update-sub">
+                          Una actualización está lista para instalar
+                        </span>
                       </div>
                     </div>
-                    <button className="lgd-update-btn" onClick={handleAcknowledgeUpdate}>
+                    <button className="lgd-update-btn" onClick={handleInstallOrUpdate}>
                       Actualizar
                     </button>
                   </div>
                 )}
                 <div className="lgd-build-list">
-                  {builds.map(b => (
-                    <div key={b.id} className={`lgd-build-row${b.isReleaseBuild ? " lgd-build-row--release" : ""}`}>
+                  {builds.map((b) => (
+                    <div
+                      key={b.id}
+                      className={`lgd-build-row${b.isReleaseBuild ? " lgd-build-row--release" : ""}`}
+                    >
                       <div className="lgd-build-info">
                         <span className="lgd-build-name">{b.versioName}</span>
                         {b.isReleaseBuild && (
                           <span className="lgd-build-badge">Versión actual</span>
                         )}
+                        {installedInfo?.buildId === b.id && (
+                          <span className="lgd-build-badge lgd-build-badge--installed">
+                            Instalada
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
+                {isInstalled && (
+                  <div className="lgd-uninstall-row">
+                    <button
+                      className="lgd-uninstall-btn"
+                      onClick={handleUninstall}
+                      disabled={uninstalling || isDownloading}
+                    >
+                      {uninstalling ? "Desinstalando..." : "🗑 Desinstalar juego"}
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -328,7 +454,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
           gameName={game.title}
           onClose={() => setReportOpen(false)}
           onSubmit={(reason, description) => {
-            console.log('[Report]', { gameId: game.id, reason, description })
+            console.log("[Report]", { gameId: game.id, reason, description })
           }}
         />
       )}
