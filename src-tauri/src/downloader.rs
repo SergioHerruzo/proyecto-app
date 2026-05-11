@@ -71,12 +71,9 @@ pub async fn run_download(
     let client = Arc::new(reqwest::Client::new());
 
     // -- 1. Fetch manifest --
+    // Manifest URL is a pre-signed storage URL — sending Bearer causes 400
     let manifest_resp = client
         .get(&params.manifest_url)
-        .header(
-            "Authorization",
-            format!("Bearer {}", params.auth_token),
-        )
         .send()
         .await
         .map_err(|e| format!("Error al obtener el manifest: {}", e))?;

@@ -47,9 +47,9 @@ pub async fn get_build_preview(
     auth_token: String,
 ) -> Result<BuildPreview, String> {
     let client = reqwest::Client::new();
+    // Manifest URL is a pre-signed storage URL — no Bearer token needed
     let resp = client
         .get(&manifest_url)
-        .header("Authorization", format!("Bearer {}", auth_token))
         .send()
         .await
         .map_err(|e| format!("Error al obtener manifest: {}", e))?;
