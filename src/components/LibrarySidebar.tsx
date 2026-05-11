@@ -40,7 +40,7 @@ export default function LibrarySidebar({ games, searchQuery, onSearch, onSelectG
           >
             <div
               className="sidebar-game-thumb"
-              style={{ backgroundImage: `url(${game.image})` }}
+              style={{ backgroundImage: `url(${game.icon ?? game.image})` }}
             />
             <span className="sidebar-game-title">{game.title}</span>
           </li>

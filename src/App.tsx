@@ -12,6 +12,7 @@ import type { Game } from "./types/games"
 import {
   getGames,
   getGameById,
+  getGenres,
   mapApiGameListItem,
   mapApiGame,
   mapGameSummary,
@@ -51,6 +52,8 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<Game[] | null>(null)
   const [searching, setSearching] = useState(false)
+  const [genres, setGenres] = useState<{ id: string; name: string }[]>([])
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([])
 
   const loadCartFromApi = async () => {
     try {
@@ -108,6 +111,12 @@ function App() {
       .finally(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    getGenres("", 1, 50)
+      .then(page => setGenres(page.items.map(g => ({ id: g.id, name: g.name }))))
+      .catch(() => {})
+  }, [])
+
   const handleAuthSuccess = async (user: AuthUser) => {
     setAuthUser(user)
     setAuthToken(user.accessToken)
@@ -128,12 +137,21 @@ function App() {
     setCurrentPage("home")
   }
 
-  const handleSearch = async (query: string) => {
-    if (!query.trim()) return
+  const handleSearch = async (query: string, genreIds: string[] = selectedGenres) => {
+    const trimmed = query.trim()
+    if (!trimmed && genreIds.length === 0) return
+
+    // Si el texto coincide con un nombre de género, filtra por ese género en vez de por título
+    const matchedGenres = trimmed
+      ? genres.filter(g => g.name.toLowerCase().includes(trimmed.toLowerCase()))
+      : []
+    const effectiveTitle = matchedGenres.length > 0 ? "" : trimmed
+    const effectiveGenres = [...new Set([...genreIds, ...matchedGenres.map(g => g.id)])]
+
     setCurrentPage("search")
     setSearching(true)
     try {
-      const page = await getGames(query, [], 1, 50)
+      const page = await getGames(effectiveTitle, effectiveGenres, 1, 50)
       setSearchResults(page.items.map(mapApiGameListItem))
     } catch {
       setSearchResults([])
@@ -142,12 +160,21 @@ function App() {
     }
   }
 
+  const handleToggleGenre = (genreId: string) => {
+    const next = selectedGenres.includes(genreId)
+      ? selectedGenres.filter(id => id !== genreId)
+      : [...selectedGenres, genreId]
+    setSelectedGenres(next)
+    handleSearch(searchQuery, next)
+  }
+
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
   }
 
   const handleClearSearch = () => {
     setSearchQuery("")
+    setSelectedGenres([])
     setSearchResults(null)
     setCurrentPage("home")
   }
@@ -236,6 +263,11 @@ function App() {
           onAddToCart={handleAddToCart}
           onBack={() => setSelectedGame(null)}
           onSelectGame={handleSelectGame}
+          onSearchByGenre={genre => {
+            setSelectedGame(null)
+            setSearchQuery(genre)
+            handleSearch(genre)
+          }}
         />
       ) : (
         <>
@@ -330,7 +362,12 @@ function App() {
             </>
           )}
           {currentPage === "library" && <Library />}
-          {currentPage === "profile" && <Profile authUser={authUser} />}
+          {currentPage === "profile" && (
+            <Profile
+              authUser={authUser}
+              onNavigateToLibrary={isTauri ? () => handleNavigate("library") : undefined}
+            />
+          )}
           {currentPage === "cart" && (
             <div className="home-page">
               <Cart items={cartItems} onRemove={handleRemoveFromCart} onContinueShopping={() => setCurrentPage("home")} onCheckout={handleCheckout} />

@@ -11,6 +11,7 @@ interface GameDetailProps {
   onAddToCart: (game: Game) => void
   onBack: () => void
   onSelectGame: (game: Game) => void
+  onSearchByGenre?: (genre: string) => void
 }
 
 const slideColors = ["1a2535", "2a1a35", "1a3525", "35251a", "251a35"]
@@ -24,7 +25,7 @@ function getScreenshots(game: Game): string[] {
 
 const mockFriendsWithGame = ["PlayerOne", "GamerX"]
 
-export default function GameDetail({ game, allGames, cartItems, ownedGameIds, onAddToCart, onBack, onSelectGame }: GameDetailProps) {
+export default function GameDetail({ game, allGames, cartItems, ownedGameIds, onAddToCart, onBack, onSelectGame, onSearchByGenre }: GameDetailProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [reportOpen, setReportOpen] = useState(false)
 
@@ -45,8 +46,6 @@ export default function GameDetail({ game, allGames, cartItems, ownedGameIds, on
         {/* Breadcrumb */}
         <div className="game-detail-breadcrumb">
           <button className="breadcrumb-btn" onClick={onBack}>Todos los juegos</button>
-          <span className="breadcrumb-sep">›</span>
-          <span className="breadcrumb-item">{game.genres[0]}</span>
           <span className="breadcrumb-sep">›</span>
           <span className="breadcrumb-item breadcrumb-item--current">{game.title}</span>
         </div>
@@ -162,7 +161,13 @@ export default function GameDetail({ game, allGames, cartItems, ownedGameIds, on
 
             <div className="detail-tags">
               {tags.map(tag => (
-                <span key={tag} className="detail-tag">{tag}</span>
+                <button
+                  key={tag}
+                  className="detail-tag"
+                  onClick={() => onSearchByGenre?.(tag)}
+                >
+                  {tag}
+                </button>
               ))}
             </div>
 
