@@ -61,9 +61,84 @@
   white-space: nowrap;
 }
 
-.auth-username {
+.profile-menu {
+  position: relative;
+}
+
+.profile-avatar-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--border-4);
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: var(--bg-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.profile-avatar-btn:hover {
+  border-color: var(--blue-primary);
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-placeholder {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+  user-select: none;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: var(--bg-raised);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  min-width: 160px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.profile-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
   font-size: 13px;
-  color: var(--text-3);
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.profile-dropdown-item:hover {
+  background-color: var(--bg-hover, rgba(255,255,255,0.06));
+  color: var(--text-1);
+}
+
+.profile-dropdown-signout {
+  color: #e05555;
+  border-top: 1px solid var(--border-1);
+}
+
+.profile-dropdown-signout:hover {
+  background-color: rgba(224, 85, 85, 0.1);
+  color: #f06565;
 }
 
 .cart-badge {

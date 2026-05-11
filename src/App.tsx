@@ -23,6 +23,7 @@ import {
   removeFromCart,
   checkoutCart,
   getUserLibrary,
+  type BasicUserResponse,
 } from "./services/api"
 import { restoreSession, logout } from "./services/auth"
 import type { AuthUser } from "./services/auth"
@@ -38,6 +39,7 @@ function App() {
   const [authMode, setAuthMode] = useState<"signin" | "register">("signin")
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
   const [authUser, setAuthUser] = useState<AuthUser | null>(null)
+  const [apiUser, setApiUser] = useState<BasicUserResponse | null>(null)
   const [theme, setTheme] = useState<Theme>("dark")
 
   const [ownedGameIds, setOwnedGameIds] = useState<Set<string>>(new Set())
@@ -80,6 +82,7 @@ function App() {
     try {
       const profile = await getCurrentUser()
       setCurrentUserId(profile.userId)
+      setApiUser(profile)
     } catch {
       // non-critical
     }
@@ -117,6 +120,7 @@ function App() {
   const handleSignOut = () => {
     logout()
     setAuthUser(null)
+    setApiUser(null)
     setAuthToken(null)
     setCurrentUserId(null)
     setCartItems([])
@@ -205,6 +209,7 @@ function App() {
         cartCount={cartItems.length}
         isAuthenticated={!!authUser}
         username={authUser?.username}
+        profilePictureUrl={apiUser?.profilePicture?.smallPictureUrl}
         onSignIn={() => { setAuthMode("signin"); setAuthModalOpen(true) }}
         onRegister={() => { setAuthMode("register"); setAuthModalOpen(true) }}
         onSignOut={handleSignOut}

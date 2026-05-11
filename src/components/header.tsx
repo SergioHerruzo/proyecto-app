@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import '../styles/Header.css'
 
 type Page = "home" | "library" | "cart" | "profile"
@@ -9,6 +10,7 @@ interface HeaderProps {
   cartCount?: number
   isAuthenticated?: boolean
   username?: string
+  profilePictureUrl?: string
   onSignIn?: () => void
   onRegister?: () => void
   onSignOut?: () => void
@@ -23,6 +25,7 @@ export default function Header({
   cartCount = 0,
   isAuthenticated = false,
   username,
+  profilePictureUrl,
   onSignIn,
   onRegister,
   onSignOut,
@@ -30,6 +33,20 @@ export default function Header({
   onToggleTheme,
   isDesktop = false,
 }: HeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [menuOpen])
+
   return (
     <header className="header">
       <div className="logo-badge">
@@ -89,21 +106,47 @@ export default function Header({
           </a>
         )}
 
-        <button
-          className="theme-toggle"
-          onClick={onToggleTheme}
-          title={theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
-        >
-          {theme === "dark" ? "☀" : "🌙"}
-        </button>
-
         {isAuthenticated ? (
-          <>
-            <span className="auth-username">{username}</span>
-            <button className="btn-outline" onClick={onSignOut}>Sign out</button>
-          </>
+          <div className="profile-menu" ref={menuRef}>
+            <button
+              className="profile-avatar-btn"
+              onClick={() => setMenuOpen(o => !o)}
+              title={username}
+            >
+              {profilePictureUrl ? (
+                <img src={profilePictureUrl} alt={username} className="profile-avatar-img" />
+              ) : (
+                <span className="profile-avatar-placeholder">
+                  {username?.[0]?.toUpperCase() ?? "?"}
+                </span>
+              )}
+            </button>
+            {menuOpen && (
+              <div className="profile-dropdown">
+                <button
+                  className="profile-dropdown-item"
+                  onClick={() => { onToggleTheme?.(); setMenuOpen(false) }}
+                >
+                  {theme === "dark" ? "☀ Tema claro" : "🌙 Tema oscuro"}
+                </button>
+                <button
+                  className="profile-dropdown-item profile-dropdown-signout"
+                  onClick={() => { onSignOut?.(); setMenuOpen(false) }}
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <>
+            <button
+              className="theme-toggle"
+              onClick={onToggleTheme}
+              title={theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
+            >
+              {theme === "dark" ? "☀" : "🌙"}
+            </button>
             <button className="btn-outline" onClick={onSignIn}>Iniciar sesión</button>
             <button className="btn-primary" onClick={onRegister}>Registrarse</button>
           </>
