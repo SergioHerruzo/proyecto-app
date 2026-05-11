@@ -90,7 +90,6 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
   }, [activeTab, game.id, achievements.length])
 
   useEffect(() => {
-    if (activeTab !== "versiones") return
     if (builds.length > 0) return
 
     setLoadingBuilds(true)
@@ -99,7 +98,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
       .then((page) => setBuilds(page.items))
       .catch(() => setBuildsError("No se pudieron cargar las versiones."))
       .finally(() => setLoadingBuilds(false))
-  }, [activeTab, game.id, builds.length])
+  }, [game.id, builds.length])
 
   async function handleInstallOrUpdate() {
     if (!releaseBuild) return
@@ -204,7 +203,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
             )}
             {!releaseBuild && !isInstalled && (
               <button className="lgd-main-btn lgd-main-btn--play" disabled>
-                Sin versión disponible
+                {loadingBuilds ? "Cargando..." : "Sin versión disponible"}
               </button>
             )}
           </>
@@ -321,7 +320,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
           <div className="lgd-section-card">
             <span className="lgd-section-label">VERSIONES DISPONIBLES</span>
 
-            {loadingBuilds && (
+            {loadingBuilds && builds.length === 0 && (
               <div className="lgd-empty-state">
                 <p className="lgd-empty-title">Cargando versiones...</p>
               </div>
