@@ -45,8 +45,10 @@ export const getBuildPreview = (manifestUrl: string, authToken: string): Promise
 export const getInstalledGames = (): Promise<Record<string, InstallInfo>> =>
   invoke("get_installed_games")
 
-export const downloadBuild = (params: DownloadBuildParams): Promise<void> =>
-  invoke("download_build", params)
+export const downloadBuild = (
+  params: DownloadBuildParams,
+): Promise<void> =>
+  invoke("download_build", { ...params })
 
 export const launchGame = (gameId: string): Promise<void> =>
   invoke("launch_game", { gameId })

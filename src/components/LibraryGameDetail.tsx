@@ -1,6 +1,6 @@
 import '../styles/LibraryGameDetail.css'
 import { useState, useEffect } from "react"
-import { Trophy, Lock, Check, Package, Users, Info, Flag, Play, ArrowUp, CheckCircle } from "lucide-react"
+import { Trophy, Lock, Package, Users, Info, Flag, Play, ArrowUp, CheckCircle } from "lucide-react"
 import type { Game } from "../types/games"
 import {
   getGameAchievements,
@@ -26,10 +26,10 @@ interface LibraryGameDetailProps {
 type Tab = "logros" | "amigos" | "info" | "versiones"
 
 const tabs: { id: Tab; label: string }[] = [
-  { id: "info",      label: "Información" },
-  { id: "logros",    label: "Logros" },
+  { id: "info", label: "Información" },
+  { id: "logros", label: "Logros" },
   { id: "versiones", label: "Versiones" },
-  { id: "amigos",    label: "Amigos" },
+  { id: "amigos", label: "Amigos" },
 ]
 
 function formatBytes(bytes: number): string {
@@ -197,86 +197,86 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
       </div>
 
       {/* Action bar */}
-<div className="lgd-actionbar">
-  {isDownloading ? (
-    <div className="lgd-download-progress">
-      <div className="lgd-download-info">
-        <span className="lgd-download-label">
-          {downloadProgress!.status === "queued"
-            ? "En cola..."
-            : `Descargando... ${dlPct}%`}
-        </span>
+      <div className="lgd-actionbar">
+        {isDownloading ? (
+          <div className="lgd-download-progress">
+            <div className="lgd-download-info">
+              <span className="lgd-download-label">
+                {downloadProgress!.status === "queued"
+                  ? "En cola..."
+                  : `Descargando... ${dlPct}%`}
+              </span>
 
-        {downloadProgress!.totalBytes > 0 && (
-          <span className="lgd-download-bytes">
-            {formatBytes(downloadProgress!.downloadedBytes)} /{" "}
-            {formatBytes(downloadProgress!.totalBytes)}
-          </span>
+              {downloadProgress!.totalBytes > 0 && (
+                <span className="lgd-download-bytes">
+                  {formatBytes(downloadProgress!.downloadedBytes)} /{" "}
+                  {formatBytes(downloadProgress!.totalBytes)}
+                </span>
+              )}
+            </div>
+
+            <div className="lgd-download-bar-track">
+              <div
+                className="lgd-download-bar-fill"
+                style={{ width: `${dlPct}%` }}
+              />
+            </div>
+
+            <button
+              className="lgd-main-btn lgd-main-btn--cancel"
+              onClick={handleCancel}
+            >
+              ✕ Cancelar
+            </button>
+          </div>
+        ) : (
+          <>
+            {isInstalled && (
+              <button
+                className="lgd-main-btn lgd-main-btn--play"
+                onClick={handlePlay}
+              >
+                <Play size={14} /> JUGAR
+              </button>
+            )}
+
+            {!isInstalled && releaseBuild && (
+              <button
+                className="lgd-main-btn lgd-main-btn--install"
+                onClick={handleInstallOrUpdate}
+              >
+                ⬇ INSTALAR
+              </button>
+            )}
+
+            {isInstalled && hasUpdate && releaseBuild && (
+              <button
+                className="lgd-main-btn lgd-main-btn--update"
+                onClick={handleInstallOrUpdate}
+              >
+                <ArrowUp size={14} /> ACTUALIZAR · {releaseBuild.versioName}
+              </button>
+            )}
+
+            {!releaseBuild && !isInstalled && (
+              <button
+                className="lgd-main-btn lgd-main-btn--play"
+                disabled
+              >
+                {loadingBuilds
+                  ? "Cargando..."
+                  : "Sin versión disponible"}
+              </button>
+            )}
+          </>
         )}
-      </div>
 
-      <div className="lgd-download-bar-track">
-        <div
-          className="lgd-download-bar-fill"
-          style={{ width: `${dlPct}%` }}
-        />
-      </div>
-
-      <button
-        className="lgd-main-btn lgd-main-btn--cancel"
-        onClick={handleCancel}
-      >
-        ✕ Cancelar
-      </button>
-    </div>
-  ) : (
-    <>
-      {isInstalled && (
         <button
-          className="lgd-main-btn lgd-main-btn--play"
-          onClick={handlePlay}
+          className="lgd-report-btn"
+          onClick={() => setReportOpen(true)}
         >
-          <Play size={14} /> JUGAR
+          <Flag size={13} /> Denunciar
         </button>
-      )}
-
-      {!isInstalled && releaseBuild && (
-        <button
-          className="lgd-main-btn lgd-main-btn--install"
-          onClick={handleInstallOrUpdate}
-        >
-          ⬇ INSTALAR
-        </button>
-      )}
-
-      {isInstalled && hasUpdate && releaseBuild && (
-        <button
-          className="lgd-main-btn lgd-main-btn--update"
-          onClick={handleInstallOrUpdate}
-        >
-          <ArrowUp size={14} /> ACTUALIZAR · {releaseBuild.versioName}
-        </button>
-      )}
-
-      {!releaseBuild && !isInstalled && (
-        <button
-          className="lgd-main-btn lgd-main-btn--play"
-          disabled
-        >
-          {loadingBuilds
-            ? "Cargando..."
-            : "Sin versión disponible"}
-        </button>
-      )}
-    </>
-  )}
-
-  <button
-    className="lgd-report-btn"
-    onClick={() => setReportOpen(true)}
-  >
-    <Flag size={13} /> Denunciar
-  </button>
 
         {actionError && (
           <span className="lgd-action-error">{actionError}</span>
@@ -346,62 +346,63 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
             )}
 
             {!loadingAchievements && achievements.length > 0 && (
-  <div className="lgd-achievement-list">
-    {achievements.map((a) => {
-      const unlocked = a.isUnlocked || unlockedIds.has(a.id)
+              <div className="lgd-achievement-list">
+                {achievements.map((a) => {
+                  const unlocked = a.isUnlocked || unlockedIds.has(a.id)
 
-      return (
-        <div
-          key={a.id}
-          className={`lgd-achievement${
-            unlocked ? " lgd-achievement--unlocked" : ""
-          }`}
-        >
-          <div className="lgd-achievement-icon">
-            {unlocked
-              ? <Trophy size={20} />
-              : <Lock size={20} />}
-          </div>
+                  return (
+                    <div
+                      key={a.id}
+                      className={`lgd-achievement${unlocked ? " lgd-achievement--unlocked" : ""
+                        }`}
+                    >
+                      <div className="lgd-achievement-icon">
+                        {unlocked
+                          ? <Trophy size={20} />
+                          : <Lock size={20} />}
+                      </div>
 
-          <div className="lgd-achievement-info">
-            <span className="lgd-achievement-name">
-              {a.name}
-            </span>
+                      <div className="lgd-achievement-info">
+                        <span className="lgd-achievement-name">
+                          {a.name}
+                        </span>
 
-            <span className="lgd-achievement-desc">
-              {a.description}
-            </span>
+                        <span className="lgd-achievement-desc">
+                          {a.description}
+                        </span>
 
-            {unlocked && a.unlockedAt && (
-              <span className="lgd-achievement-date">
-                Desbloqueado el{" "}
-                {new Date(a.unlockedAt).toLocaleDateString("es-ES")}
-              </span>
+                        {unlocked && a.unlockedAt && (
+                          <span className="lgd-achievement-date">
+                            Desbloqueado el{" "}
+                            {new Date(a.unlockedAt).toLocaleDateString("es-ES")}
+                          </span>
+                        )}
+                      </div>
+
+                      {!unlocked && (
+                        <button
+                          className="lgd-achievement-btn"
+                          disabled={unlockingId === a.id}
+                          onClick={() => handleUnlock(a.id)}
+                        >
+                          {unlockingId === a.id
+                            ? "..."
+                            : "Desbloquear"}
+                        </button>
+                      )}
+
+                      {unlocked && (
+                        <span className="lgd-achievement-done">
+                          <CheckCircle size={13} /> Desbloqueado
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </div>
-
-          {!unlocked && (
-            <button
-              className="lgd-achievement-btn"
-              disabled={unlockingId === a.id}
-              onClick={() => handleUnlock(a.id)}
-            >
-              {unlockingId === a.id
-                ? "..."
-                : "Desbloquear"}
-            </button>
-          )}
-
-          {unlocked && (
-            <span className="lgd-achievement-done">
-              <CheckCircle size={13} /> Desbloqueado
-            </span>
-          )}
-        </div>
-      )
-    })}
-  </div>
-)}
+        )}
 
         {activeTab === "versiones" && (
           <div className="lgd-section-card">

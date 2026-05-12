@@ -245,14 +245,15 @@ function AppContent({
     }
   }
 
-  const handleToggleGenre = (genreId: string) => {
+  // Unused
+  /*const handleToggleGenre = (genreId: string) => {
     const next = selectedGenres.includes(genreId)
       ? selectedGenres.filter(id => id !== genreId)
       : [...selectedGenres, genreId]
 
     setSelectedGenres(next)
     handleSearch(searchQuery, next)
-  }
+  }*/
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
