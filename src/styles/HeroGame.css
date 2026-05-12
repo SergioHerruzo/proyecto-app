@@ -57,8 +57,18 @@
 }
 
 @media (max-width: 600px) {
+  .hero {
+    height: auto;
+    padding: 20px 16px;
+  }
+
   .hero-content {
     flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero-title {
+    font-size: 22px;
   }
 
   .hero-image {

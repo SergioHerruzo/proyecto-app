@@ -47,6 +47,8 @@ function App() {
 
   const [allGames, setAllGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingDetail, setLoadingDetail] = useState(false)
+  const [libraryInitialGameId, setLibraryInitialGameId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const [searchQuery, setSearchQuery] = useState("")
@@ -181,11 +183,14 @@ function App() {
 
   const handleSelectGame = async (game: Game) => {
     setSelectedGame(game)
+    setLoadingDetail(true)
     try {
       const detail = await getGameById(game.id)
       setSelectedGame(mapApiGame(detail))
     } catch {
       // keep partial data
+    } finally {
+      setLoadingDetail(false)
     }
   }
 
@@ -263,6 +268,12 @@ function App() {
           onAddToCart={handleAddToCart}
           onBack={() => setSelectedGame(null)}
           onSelectGame={handleSelectGame}
+          loading={loadingDetail}
+          onViewInLibrary={isTauri ? () => {
+            setLibraryInitialGameId(selectedGame.id)
+            setSelectedGame(null)
+            handleNavigate("library")
+          } : undefined}
           onSearchByGenre={genre => {
             setSelectedGame(null)
             setSearchQuery(genre)
@@ -277,6 +288,8 @@ function App() {
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onSearch={handleSearch}
+                allGames={allGames}
+                onSelectGame={handleSelectGame}
               />
 
               {currentPage === "search" ? (
@@ -325,6 +338,10 @@ function App() {
                           ownedGameIds={ownedGameIds}
                           onAddToCart={handleAddToCart}
                           onSelectGame={handleSelectGame}
+                          onViewInLibrary={isTauri ? () => {
+                            setLibraryInitialGameId(featuredGame.id)
+                            handleNavigate("library")
+                          } : undefined}
                         />
                       )}
                       <div className="home-page">
@@ -361,7 +378,7 @@ function App() {
               )}
             </>
           )}
-          {currentPage === "library" && <Library />}
+          {currentPage === "library" && <Library initialGameId={libraryInitialGameId} onInitialGameConsumed={() => setLibraryInitialGameId(null)} />}
           {currentPage === "profile" && (
             <Profile
               authUser={authUser}

@@ -140,3 +140,35 @@
   display: flex;
   gap: 10px;
 }
+
+@media (max-width: 600px) {
+  .cart-page {
+    padding: 20px 16px;
+  }
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .cart-item-image {
+    width: 100%;
+    height: 140px;
+  }
+  .cart-item-right {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cart-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .cart-total {
+    justify-content: space-between;
+  }
+  .cart-actions {
+    flex-direction: column;
+  }
+}

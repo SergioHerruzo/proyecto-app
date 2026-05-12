@@ -8,9 +8,11 @@ interface GameDetailProps {
   allGames: Game[]
   cartItems: Game[]
   ownedGameIds: Set<string>
+  loading?: boolean
   onAddToCart: (game: Game) => void
   onBack: () => void
   onSelectGame: (game: Game) => void
+  onViewInLibrary?: () => void
   onSearchByGenre?: (genre: string) => void
 }
 
@@ -25,9 +27,79 @@ function getScreenshots(game: Game): string[] {
 
 const mockFriendsWithGame = ["PlayerOne", "GamerX"]
 
-export default function GameDetail({ game, allGames, cartItems, ownedGameIds, onAddToCart, onBack, onSelectGame, onSearchByGenre }: GameDetailProps) {
+function GameDetailSkeleton({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="game-detail-wrapper">
+      <div className="game-detail-container">
+        <div className="game-detail-breadcrumb">
+          <button className="breadcrumb-btn" onClick={onBack}>Todos los juegos</button>
+          <span className="breadcrumb-sep">›</span>
+          <div className="skeleton skeleton-breadcrumb" style={{ width: 120 }} />
+        </div>
+
+        <div className="skeleton skeleton-title" />
+
+        <div className="game-detail-body">
+          <div className="game-detail-left">
+            <div className="skeleton skeleton-carousel" />
+
+            <div className="detail-thumbnails">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="skeleton skeleton-thumb" />
+              ))}
+            </div>
+
+            <div className="skeleton skeleton-purchase" />
+            <div className="skeleton skeleton-friends" />
+          </div>
+
+          <div className="game-detail-right">
+            <div className="skeleton skeleton-cover" />
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div className="skeleton skeleton-line" style={{ width: "100%" }} />
+              <div className="skeleton skeleton-line" style={{ width: "90%" }} />
+              <div className="skeleton skeleton-line" style={{ width: "75%" }} />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, borderTop: "1px solid var(--border-1)", paddingTop: 12 }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="skeleton skeleton-meta-row" />
+              ))}
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="skeleton skeleton-tag" />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="detail-similar" style={{ marginTop: 32 }}>
+          <div className="skeleton skeleton-line" style={{ width: 220, marginBottom: 12 }} />
+          <div className="detail-similar-grid">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="detail-similar-card" style={{ cursor: "default" }}>
+                <div className="skeleton skeleton-similar-image" />
+                <div className="detail-similar-info">
+                  <div className="skeleton skeleton-similar-title" style={{ marginBottom: 4 }} />
+                  <div className="skeleton skeleton-similar-genre" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function GameDetail({ game, allGames, cartItems, ownedGameIds, loading, onAddToCart, onBack, onSelectGame, onViewInLibrary, onSearchByGenre }: GameDetailProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [reportOpen, setReportOpen] = useState(false)
+
+  if (loading) return <GameDetailSkeleton onBack={onBack} />
 
   const screenshots = getScreenshots(game)
   const isOwned = ownedGameIds.has(game.id)
@@ -106,11 +178,14 @@ export default function GameDetail({ game, allGames, cartItems, ownedGameIds, on
                   <span className="detail-new-price">{game.price.toFixed(2)}€</span>
                 )}
                 <button
-                  className={`detail-buy-btn ${isOwned ? "detail-buy-btn--owned" : inCart ? "detail-buy-btn--in-cart" : ""}`}
-                  onClick={() => { if (!isOwned && !inCart) onAddToCart(game) }}
-                  disabled={isOwned}
+                  className={`detail-buy-btn ${isOwned && onViewInLibrary ? "detail-buy-btn--library" : isOwned ? "detail-buy-btn--owned" : inCart ? "detail-buy-btn--in-cart" : ""}`}
+                  disabled={isOwned && !onViewInLibrary}
+                  onClick={() => {
+                    if (isOwned) onViewInLibrary?.()
+                    else if (!inCart) onAddToCart(game)
+                  }}
                 >
-                  {isOwned ? "Ya tienes este juego" : inCart ? "En el carrito" : "Añadir al carro"}
+                  {isOwned && onViewInLibrary ? "Ver en la biblioteca" : isOwned ? "Ya tienes este juego" : inCart ? "En el carrito" : "Añadir al carro"}
                 </button>
               </div>
             </div>

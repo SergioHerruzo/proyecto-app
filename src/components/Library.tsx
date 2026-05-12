@@ -18,7 +18,12 @@ import {
   getCollectionById,
 } from "../services/api"
 
-export default function Library() {
+interface LibraryProps {
+  initialGameId?: string | null
+  onInitialGameConsumed?: () => void
+}
+
+export default function Library({ initialGameId, onInitialGameConsumed }: LibraryProps) {
   const [ownedGames, setOwnedGames] = useState<Game[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,6 +55,16 @@ export default function Library() {
       })
       .finally(() => setLoading(false))
   }, [loadCollections])
+
+  useEffect(() => {
+    if (!initialGameId || loading || ownedGames.length === 0) return
+    const game = ownedGames.find(g => g.id === initialGameId)
+    if (game) {
+      setSelectedGame(game)
+      setSelectedCollection(null)
+      onInitialGameConsumed?.()
+    }
+  }, [initialGameId, loading, ownedGames, onInitialGameConsumed])
 
   const handleSelectGame = (game: Game) => {
     setSelectedCollection(null)

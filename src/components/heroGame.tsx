@@ -6,10 +6,12 @@ interface HeroGameProps {
   ownedGameIds?: Set<string>
   onAddToCart?: (game: Game) => void
   onSelectGame?: (game: Game) => void
+  onViewInLibrary?: () => void
 }
 
-export default function HeroGame({ game, ownedGameIds, onAddToCart, onSelectGame }: HeroGameProps) {
+export default function HeroGame({ game, ownedGameIds, onAddToCart, onSelectGame, onViewInLibrary }: HeroGameProps) {
   const isOwned = ownedGameIds?.has(game.id) ?? false
+  const showLibraryBtn = isOwned && !!onViewInLibrary
 
   return (
     <section className="hero" style={{ cursor: "pointer" }} onClick={() => onSelectGame?.(game)}>
@@ -21,11 +23,15 @@ export default function HeroGame({ game, ownedGameIds, onAddToCart, onSelectGame
           )}
           <div className="hero-buttons">
             <button
-              className="btn-primary"
-              disabled={isOwned}
-              onClick={e => { e.stopPropagation(); if (!isOwned) onAddToCart?.(game) }}
+              className={showLibraryBtn ? "btn-library" : "btn-primary"}
+              disabled={isOwned && !showLibraryBtn}
+              onClick={e => {
+                e.stopPropagation()
+                if (showLibraryBtn) onViewInLibrary()
+                else if (!isOwned) onAddToCart?.(game)
+              }}
             >
-              {isOwned ? "Ya en tu biblioteca" : game.price !== undefined ? `Comprar - ${game.price.toFixed(2)}€` : "Comprar"}
+              {showLibraryBtn ? "Ver en la biblioteca" : isOwned ? "Ya en tu biblioteca" : game.price !== undefined ? `Comprar - ${game.price.toFixed(2)}€` : "Comprar"}
             </button>
           </div>
         </div>

@@ -202,13 +202,40 @@
 
 @media (max-width: 600px) {
   .header {
+    display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    align-items: center;
+    gap: 0;
+    padding: 10px 16px;
+    row-gap: 4px;
+  }
+
+  .logo-badge {
+    flex: 1;
+  }
+
+  .auth-buttons {
+    flex-shrink: 0;
+    gap: 6px;
+  }
+
+  .btn-download {
+    font-size: 12px;
+    padding: 6px 10px;
   }
 
   .nav {
     order: 3;
     width: 100%;
     flex-wrap: wrap;
+    gap: 0;
+    padding: 4px 0 2px;
+    border-top: 1px solid var(--border-1);
+    margin-top: 4px;
+  }
+
+  .nav-link {
+    font-size: 13px;
+    padding: 6px 10px;
   }
 }
