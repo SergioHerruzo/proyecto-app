@@ -12,11 +12,9 @@ interface GameCardProps {
 export default function GameCard({ game, variant = "recommended", isOwned = false, onAddToCart, onSelectGame }: GameCardProps) {
   return (
     <div className={`game-card game-card--${variant}`} onClick={() => onSelectGame?.(game)}>
-      <div
-        className="game-card-image"
-        style={{ backgroundImage: `url(${game.image})` }}
-      >
-        {variant === "discount" && !isOwned && (
+      <div className="game-card-image">
+        <div className="game-card-image-bg" style={{ backgroundImage: `url(${game.image})` }} />
+        {!isOwned && (
           <button className="cart-btn" title="Agregar al carrito" onClick={e => { e.stopPropagation(); onAddToCart?.(game) }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="21" r="1" />
@@ -25,18 +23,12 @@ export default function GameCard({ game, variant = "recommended", isOwned = fals
             </svg>
           </button>
         )}
-        {variant === "discount" && isOwned && (
-          <div className="cart-btn cart-btn--owned" title="Ya tienes este juego" onClick={e => e.stopPropagation()}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        {isOwned && (
+          <div className="cart-btn cart-btn--owned" onClick={e => e.stopPropagation()}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}>
               <polyline points="20 6 9 17 4 12" />
             </svg>
-          </div>
-        )}
-        {variant === "recommended" && (
-          <div className="platform-icon">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M0 12.5C0 5.596 5.596 0 12.5 0S25 5.596 25 12.5 19.404 25 12.5 25 0 19.404 0 12.5z"/>
-            </svg>
+            <span className="owned-label">Ya lo tienes</span>
           </div>
         )}
       </div>

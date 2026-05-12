@@ -1,5 +1,6 @@
 import '../styles/Profile.css'
 import { useState, useEffect } from "react"
+import { Trophy } from "lucide-react"
 import type { AuthUser } from "../services/auth"
 import {
   getCurrentUser,
@@ -7,6 +8,7 @@ import {
   getGameAchievements,
   type BasicUserResponse,
   type AchievementResponse,
+  type GameSummary,
 } from "../services/api"
 import EditProfileModal from "./EditProfileModal"
 
@@ -43,9 +45,10 @@ const statusColor: Record<Friend["status"], string> = {
 
 interface ProfileProps {
   authUser: AuthUser | null
+  onNavigateToLibrary?: () => void
 }
 
-export default function Profile({ authUser }: ProfileProps) {
+export default function Profile({ authUser, onNavigateToLibrary }: ProfileProps) {
   const [friends, setFriends] = useState<Friend[]>(mockFriends)
   const [addInput, setAddInput] = useState("")
   const [addError, setAddError] = useState("")
@@ -53,35 +56,47 @@ export default function Profile({ authUser }: ProfileProps) {
   const [apiUser, setApiUser] = useState<BasicUserResponse | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [editOpen, setEditOpen] = useState(false)
+  const [recentGames, setRecentGames] = useState<GameSummary[]>([])
+  const [loadingGames, setLoadingGames] = useState(false)
   const [recentAchievements, setRecentAchievements] = useState<RecentAchievement[]>([])
   const [loadingAchievements, setLoadingAchievements] = useState(false)
 
   const loadRecentAchievements = async (userId: string) => {
     setLoadingAchievements(true)
+    setLoadingGames(true)
     try {
       const library = await getUserLibrary()
+      console.log('[Profile] library games:', library.length, library.map(g => g.id))
+      setRecentGames(library.slice(0, 4))
+      setLoadingGames(false)
       const toCheck = library.slice(0, 8)
       const results = await Promise.allSettled(
         toCheck.map(game =>
-          getGameAchievements(game.id, userId).then(list =>
-            list
+          getGameAchievements(game.id, userId).then(list => {
+            console.log(`[Profile] achievements for ${game.title} (${game.id}):`, list)
+            return list
               .filter(a => a.isUnlocked)
               .map(a => ({ ...a, gameTitle: game.title }))
-          )
+          })
         )
       )
+      results.forEach((r, i) => {
+        if (r.status === 'rejected') console.error(`[Profile] achievement fetch failed for game[${i}]:`, r.reason)
+      })
       const all: RecentAchievement[] = results
         .filter((r): r is PromiseFulfilledResult<RecentAchievement[]> => r.status === "fulfilled")
         .flatMap(r => r.value)
 
+      console.log('[Profile] unlocked achievements total:', all.length)
       all.sort((a, b) => {
         const da = a.unlockedAt ? new Date(a.unlockedAt).getTime() : 0
         const db = b.unlockedAt ? new Date(b.unlockedAt).getTime() : 0
         return db - da
       })
       setRecentAchievements(all.slice(0, 5))
-    } catch {
-      // non-critical
+    } catch (err) {
+      console.error('[Profile] loadRecentAchievements error:', err)
+      setLoadingGames(false)
     } finally {
       setLoadingAchievements(false)
     }
@@ -140,6 +155,38 @@ export default function Profile({ authUser }: ProfileProps) {
           </div>
         </div>
 
+        <div className="profile-stat-card">
+          <div className="profile-stat-header">
+            <h2 className="profile-stat-title">ÚLTIMAS ADQUISICIONES</h2>
+            {onNavigateToLibrary && (
+              <button className="btn-ver-mas" onClick={onNavigateToLibrary}>Ver más →</button>
+            )}
+          </div>
+
+          {loadingGames && <p className="profile-stat-hint">Cargando juegos...</p>}
+
+          {!loadingGames && recentGames.length === 0 && (
+            <p className="profile-stat-hint">Aún no tienes juegos en tu biblioteca.</p>
+          )}
+
+          {!loadingGames && recentGames.length > 0 && (
+            <div className="profile-recent-games">
+              {recentGames.map(g => {
+                const img = g.artworks?.[0]?.smallImageUrl ?? g.storePictures?.[0]?.smallImageUrl ?? ""
+                return (
+                  <div key={g.id} className="profile-recent-game">
+                    <div
+                      className="profile-recent-game-img"
+                      style={img ? { backgroundImage: `url(${img})` } : undefined}
+                    />
+                    <span className="profile-recent-game-title">{g.title}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
         <div className="profile-stats">
           <div className="profile-stat-card">
             <div className="profile-stat-header">
@@ -155,7 +202,7 @@ export default function Profile({ authUser }: ProfileProps) {
 
             {!loadingAchievements && recentAchievements.length === 0 && (
               <div className="profile-achievements-empty">
-                <span className="profile-achievements-empty-icon">🏆</span>
+                <Trophy size={32} className="profile-achievements-empty-icon" />
                 <p className="profile-achievements-empty-text">Aún no has desbloqueado ningún logro</p>
               </div>
             )}
@@ -164,7 +211,7 @@ export default function Profile({ authUser }: ProfileProps) {
               <ul className="profile-achievements-list">
                 {recentAchievements.map(a => (
                   <li key={a.id} className="achievement-item">
-                    <span className="achievement-icon">🏆</span>
+                    <Trophy size={22} className="achievement-icon" />
                     <div className="achievement-info">
                       <span className="achievement-title">{a.name}</span>
                       <span className="achievement-description">{a.description}</span>

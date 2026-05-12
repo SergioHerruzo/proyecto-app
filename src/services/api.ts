@@ -142,6 +142,7 @@ export function mapApiGameListItem(item: GameListItemResponse): Game {
     genres: [],
     image: artwork?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(item.title)}`,
+    icon: artwork?.smallImageUrl,
   }
 }
 
@@ -161,6 +162,7 @@ export function mapApiGame(game: GameResponse): Game {
     developer: game.owner?.username,
     image: storePic?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(game.title)}`,
+    icon: artworks[0]?.smallImageUrl,
     screenshots: artworks.length > 0 ? artworks.map(a => a.largeImageUrl) : undefined,
   }
 }
@@ -175,6 +177,7 @@ export function mapGameSummary(g: GameSummary): Game {
     genres: g.genres?.map(x => x.name) ?? [],
     image: storePic?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(g.title)}`,
+    icon: artworks[0]?.smallImageUrl,
     screenshots: artworks.length > 0 ? artworks.map(a => a.largeImageUrl) : undefined,
   }
 }
@@ -193,14 +196,16 @@ export async function getGames(
   params.set("PageNumber", String(pageNumber))
   params.set("PageSize", String(pageSize))
 
-  const res = await fetch(`${BASE_URL}/games?${params}`)
+  const url = `${BASE_URL}/games?${params}`
+  console.log("[API] GET /games →", url)
+  const res = await fetch(url)
   if (!res.ok) {
     const body = await res.text().catch(() => "")
     console.error(`[API] GET /games → ${res.status}`, body)
     throw new Error(`Error ${res.status}`)
   }
   const data = await res.json()
-  console.log("[API] GET /games →", data)
+  console.log("[API] GET /games response →", data)
   return data
 }
 

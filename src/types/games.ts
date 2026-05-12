@@ -7,6 +7,7 @@ export interface Game {
   oldPrice?: number
   genres: string[]
   image: string
+  icon?: string
   developer?: string
   releaseDate?: string
   tags?: string[]
