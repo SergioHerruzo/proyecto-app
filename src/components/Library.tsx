@@ -1,5 +1,6 @@
 import '../styles/Library.css'
 import { useState, useEffect, useCallback } from "react"
+import { Gamepad2 } from "lucide-react"
 import LibrarySidebar from "./LibrarySidebar"
 import CollectionsView from "./CollectionsView"
 import CollectionDetail from "./CollectionDetail"
@@ -17,7 +18,12 @@ import {
   getCollectionById,
 } from "../services/api"
 
-export default function Library() {
+interface LibraryProps {
+  initialGameId?: string | null
+  onInitialGameConsumed?: () => void
+}
+
+export default function Library({ initialGameId, onInitialGameConsumed }: LibraryProps) {
   const [ownedGames, setOwnedGames] = useState<Game[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +43,10 @@ export default function Library() {
 
   useEffect(() => {
     Promise.all([
-      getUserLibrary().then(summaries => setOwnedGames(summaries.map(mapGameSummary))),
+      getUserLibrary().then(summaries => {
+        console.log("[Library] getUserLibrary result:", summaries)
+        setOwnedGames(summaries.map(mapGameSummary))
+      }),
       loadCollections(),
     ])
       .catch(err => {
@@ -46,6 +55,16 @@ export default function Library() {
       })
       .finally(() => setLoading(false))
   }, [loadCollections])
+
+  useEffect(() => {
+    if (!initialGameId || loading || ownedGames.length === 0) return
+    const game = ownedGames.find(g => g.id === initialGameId)
+    if (game) {
+      setSelectedGame(game)
+      setSelectedCollection(null)
+      onInitialGameConsumed?.()
+    }
+  }, [initialGameId, loading, ownedGames, onInitialGameConsumed])
 
   const handleSelectGame = (game: Game) => {
     setSelectedCollection(null)
@@ -120,7 +139,7 @@ export default function Library() {
   if (ownedGames.length === 0) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 50px)", gap: "12px", color: "var(--text-4)" }}>
-        <span style={{ fontSize: "2.5rem" }}>🎮</span>
+        <Gamepad2 size={40} style={{ opacity: 0.4 }} />
         <p style={{ margin: 0, fontSize: "15px" }}>Tu biblioteca está vacía</p>
         <p style={{ margin: 0, fontSize: "13px", color: "var(--text-5)" }}>Los juegos que compres aparecerán aquí</p>
       </div>

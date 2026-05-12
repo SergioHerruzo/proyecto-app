@@ -1,5 +1,6 @@
 import '../styles/AuthModal.css'
 import { useState } from "react"
+import { Check, Circle } from "lucide-react"
 import { login, register, confirmRegister, resendConfirmationCode } from "../services/auth"
 import type { AuthUser } from "../services/auth"
 
@@ -44,7 +45,7 @@ function RuleItem({ ok, text }: { ok: boolean; text: string }) {
       gap: "0.4rem",
       listStyle: "none",
     }}>
-      <span style={{ fontSize: "0.7rem" }}>{ok ? "✓" : "○"}</span>
+      {ok ? <Check size={12} /> : <Circle size={12} />}
       {text}
     </li>
   )

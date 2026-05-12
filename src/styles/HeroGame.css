@@ -9,6 +9,8 @@
   display: flex;
   align-items: center;
   gap: 40px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .hero-text {
@@ -55,8 +57,18 @@
 }
 
 @media (max-width: 600px) {
+  .hero {
+    height: auto;
+    padding: 20px 16px;
+  }
+
   .hero-content {
     flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero-title {
+    font-size: 22px;
   }
 
   .hero-image {

@@ -226,6 +226,25 @@
 }
 .detail-buy-btn--owned:hover { background-color: #1a2e1a; }
 
+[data-theme="light"] .detail-buy-btn--owned {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  opacity: 1;
+}
+[data-theme="light"] .detail-buy-btn--owned:hover { background-color: #dcfce7; }
+
+.detail-buy-btn--library {
+  background-color: rgba(124, 58, 237, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  cursor: pointer;
+}
+.detail-buy-btn--library:hover {
+  background-color: rgba(124, 58, 237, 0.25);
+  border-color: rgba(124, 58, 237, 0.5);
+}
+
 .detail-friends {
   background-color: var(--bg-raised);
   border-radius: 6px;
@@ -328,6 +347,7 @@
   border: 1px solid var(--border-2);
   color: var(--text-4);
   font-size: 11px;
+  font-family: inherit;
   padding: 3px 8px;
   border-radius: 3px;
   cursor: pointer;
@@ -405,3 +425,62 @@
 }
 
 .detail-report-btn:hover { color: var(--text-4); }
+
+@media (max-width: 600px) {
+  .game-detail-container {
+    padding: 16px 16px 32px;
+  }
+  .game-detail-title {
+    font-size: 20px;
+  }
+  .game-detail-body {
+    flex-direction: column;
+  }
+  .game-detail-right {
+    width: 100%;
+  }
+  .detail-carousel-main {
+    height: 200px;
+  }
+  .detail-carousel-arrow {
+    min-height: 200px;
+  }
+  .detail-similar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .detail-purchase-row {
+    flex-wrap: wrap;
+  }
+}
+
+/* ===== SKELETON ===== */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-raised) 25%,
+    var(--bg-control) 50%,
+    var(--bg-raised) 75%
+  );
+  background-size: 600px 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: 4px;
+}
+
+.skeleton-breadcrumb { height: 13px; width: 180px; margin-bottom: 10px; }
+.skeleton-title      { height: 32px; width: 55%; margin: 0 0 20px; }
+.skeleton-carousel   { height: 280px; border-radius: 6px; }
+.skeleton-thumb      { width: 90px; height: 54px; flex-shrink: 0; }
+.skeleton-purchase   { height: 64px; border-radius: 6px; }
+.skeleton-friends    { height: 88px; border-radius: 6px; }
+.skeleton-cover      { width: 100%; aspect-ratio: 16 / 9; border-radius: 6px; }
+.skeleton-line       { height: 13px; }
+.skeleton-meta-row   { height: 34px; border-radius: 4px; }
+.skeleton-tag        { height: 26px; width: 62px; border-radius: 3px; }
+.skeleton-similar-image { width: 100%; height: 90px; border-radius: 0; }
+.skeleton-similar-title { height: 12px; width: 85%; }
+.skeleton-similar-genre { height: 11px; width: 60%; }

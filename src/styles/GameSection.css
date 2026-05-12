@@ -61,6 +61,26 @@
   gap: 16px;
 }
 
+@media (min-width: 1400px) {
+  .games-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .carousel-item {
+    flex: 0 0 20%;
+  }
+}
+
+@media (min-width: 1800px) {
+  .games-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .carousel-item {
+    flex: 0 0 16.66%;
+  }
+}
+
 @media (max-width: 900px) {
   .games-grid {
     grid-template-columns: repeat(3, 1fr);

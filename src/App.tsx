@@ -14,6 +14,7 @@ import type { Game } from "./types/games"
 import {
   getGames,
   getGameById,
+  getGenres,
   mapApiGameListItem,
   mapApiGame,
   mapGameSummary,
@@ -28,6 +29,7 @@ import {
   getGameBuildsAsUser,
   getGameBuildById,
   type GameSummary,
+  type BasicUserResponse,
 } from "./services/api"
 import { restoreSession, logout } from "./services/auth"
 import type { AuthUser } from "./services/auth"
@@ -49,6 +51,7 @@ function AppContent({
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authMode, setAuthMode] = useState<"signin" | "register">("signin")
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
+  const [apiUser, setApiUser] = useState<BasicUserResponse | null>(null)
   const [theme, setTheme] = useState<Theme>("dark")
   const [showDownloads, setShowDownloads] = useState(false)
 
@@ -56,11 +59,15 @@ function AppContent({
 
   const [allGames, setAllGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingDetail, setLoadingDetail] = useState(false)
+  const [libraryInitialGameId, setLibraryInitialGameId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<Game[] | null>(null)
   const [searching, setSearching] = useState(false)
+  const [genres, setGenres] = useState<{ id: string; name: string }[]>([])
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([])
 
   // These are no-ops on web (isTauri guards are inside the provider)
   const { downloads, installedGames, startDownload, refreshInstalled } = useDownloads()
@@ -98,6 +105,7 @@ function AppContent({
     try {
       const profile = await getCurrentUser()
       setCurrentUserId(profile.userId)
+      setApiUser(profile)
     } catch {
       // non-critical
     }
@@ -105,19 +113,30 @@ function AppContent({
 
   const checkAndAutoUpdate = async (summaries: GameSummary[]) => {
     if (!isTauri) return
+
     await refreshInstalled()
 
     for (const [gameId, info] of Object.entries(installedGames)) {
       const libEntry = summaries.find((s) => s.id === gameId)
       if (!libEntry) continue
+
       try {
         const buildsPage = await getGameBuildsAsUser(gameId)
         const releaseBuild = buildsPage.items.find((b) => b.isReleaseBuild)
+
         if (!releaseBuild || releaseBuild.id === info.buildId) continue
 
         const buildDetail = await getGameBuildById(releaseBuild.id)
-        const gameObj: Game = { id: gameId, title: libEntry.title, genres: [], image: "" }
+
+        const gameObj: Game = {
+          id: gameId,
+          title: libEntry.title,
+          genres: [],
+          image: "",
+        }
+
         await startDownload(gameObj, buildDetail)
+
         console.log(`[AutoUpdate] ${gameId} → ${releaseBuild.id}`)
       } catch (e) {
         console.error(`[AutoUpdate] ${gameId}:`, e)
@@ -131,8 +150,11 @@ function AppContent({
       if (user) {
         setAuthToken(user.accessToken)
         onAuthChange(user)
+
         await loadCartFromApi()
+
         const summaries = await loadLibraryIds()
+
         await loadCurrentUserId()
         await checkAndAutoUpdate(summaries)
       }
@@ -146,18 +168,31 @@ function AppContent({
       .finally(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    getGenres("", 1, 50)
+      .then(page => setGenres(page.items.map(g => ({
+        id: g.id,
+        name: g.name,
+      }))))
+      .catch(() => {})
+  }, [])
+
   const handleAuthSuccess = async (user: AuthUser) => {
     setAuthToken(user.accessToken)
     setAuthModalOpen(false)
     onAuthChange(user)
+
     await loadCartFromApi()
+
     const summaries = await loadLibraryIds()
+
     await loadCurrentUserId()
     await checkAndAutoUpdate(summaries)
   }
 
   const handleSignOut = () => {
     logout()
+    setApiUser(null)
     setAuthToken(null)
     setCurrentUserId(null)
     setCartItems([])
@@ -166,12 +201,42 @@ function AppContent({
     onAuthChange(null)
   }
 
-  const handleSearch = async (query: string) => {
-    if (!query.trim()) return
+  const handleSearch = async (
+    query: string,
+    genreIds: string[] = selectedGenres,
+  ) => {
+    const trimmed = query.trim()
+
+    if (!trimmed && genreIds.length === 0) return
+
+    // Si el texto coincide con un nombre de género,
+    // filtra por ese género en vez de por título
+    const matchedGenres = trimmed
+      ? genres.filter(g =>
+          g.name.toLowerCase().includes(trimmed.toLowerCase()),
+        )
+      : []
+
+    const effectiveTitle = matchedGenres.length > 0 ? "" : trimmed
+
+    const effectiveGenres = [
+      ...new Set([
+        ...genreIds,
+        ...matchedGenres.map(g => g.id),
+      ]),
+    ]
+
     setCurrentPage("search")
     setSearching(true)
+
     try {
-      const page = await getGames(query, [], 1, 50)
+      const page = await getGames(
+        effectiveTitle,
+        effectiveGenres,
+        1,
+        50,
+      )
+
       setSearchResults(page.items.map(mapApiGameListItem))
     } catch {
       setSearchResults([])
@@ -180,19 +245,37 @@ function AppContent({
     }
   }
 
+  const handleToggleGenre = (genreId: string) => {
+    const next = selectedGenres.includes(genreId)
+      ? selectedGenres.filter(id => id !== genreId)
+      : [...selectedGenres, genreId]
+
+    setSelectedGenres(next)
+    handleSearch(searchQuery, next)
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value)
+  }
+
   const handleClearSearch = () => {
     setSearchQuery("")
+    setSelectedGenres([])
     setSearchResults(null)
     setCurrentPage("home")
   }
 
   const handleSelectGame = async (game: Game) => {
     setSelectedGame(game)
+    setLoadingDetail(true)
+
     try {
       const detail = await getGameById(game.id)
       setSelectedGame(mapApiGame(detail))
     } catch {
       // keep partial data
+    } finally {
+      setLoadingDetail(false)
     }
   }
 
@@ -202,38 +285,59 @@ function AppContent({
       setAuthModalOpen(true)
       return
     }
+
     if (ownedGameIds.has(game.id)) return
     if (cartItems.find((g) => g.id === game.id)) return
+
     setCartItems((prev) => [...prev, game])
-    try { await addToCart(game.id) } catch { /* non-critical */ }
+
+    try {
+      await addToCart(game.id)
+    } catch {
+      // non-critical
+    }
   }
 
   const handleRemoveFromCart = async (id: string) => {
     setCartItems((prev) => prev.filter((g) => g.id !== id))
+
     if (authUser) {
-      try { await removeFromCart(id) } catch { /* non-critical */ }
+      try {
+        await removeFromCart(id)
+      } catch {
+        // non-critical
+      }
     }
   }
 
   const handleCheckout = async () => {
     await checkoutCart()
+
     setCartItems([])
+
     await loadLibraryIds()
+
     setCurrentPage(isTauri ? "library" : "home")
   }
 
   const handleNavigate = (page: Page) => {
     if (page === "library" && !isTauri) return
+
     setSelectedGame(null)
+
     if (page !== "search") {
       setSearchQuery("")
       setSearchResults(null)
     }
+
     setCurrentPage(page)
   }
 
   const featuredGame = allGames[0]
-  const discountedGames = allGames.filter((g) => g.discount !== undefined && g.discount > 0)
+
+  const discountedGames = allGames.filter(
+    (g) => g.discount !== undefined && g.discount > 0,
+  )
 
   return (
     <>
@@ -243,8 +347,15 @@ function AppContent({
         cartCount={cartItems.length}
         isAuthenticated={!!authUser}
         username={authUser?.username}
-        onSignIn={() => { setAuthMode("signin"); setAuthModalOpen(true) }}
-        onRegister={() => { setAuthMode("register"); setAuthModalOpen(true) }}
+        profilePictureUrl={apiUser?.profilePicture?.smallPictureUrl}
+        onSignIn={() => {
+          setAuthMode("signin")
+          setAuthModalOpen(true)
+        }}
+        onRegister={() => {
+          setAuthMode("register")
+          setAuthModalOpen(true)
+        }}
         onSignOut={handleSignOut}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -275,6 +386,19 @@ function AppContent({
           onAddToCart={handleAddToCart}
           onBack={() => setSelectedGame(null)}
           onSelectGame={handleSelectGame}
+          loading={loadingDetail}
+          onViewInLibrary={isTauri
+            ? () => {
+                setLibraryInitialGameId(selectedGame.id)
+                setSelectedGame(null)
+                handleNavigate("library")
+              }
+            : undefined}
+          onSearchByGenre={(genre) => {
+            setSelectedGame(null)
+            setSearchQuery(genre)
+            handleSearch(genre)
+          }}
         />
       ) : (
         <>
@@ -282,25 +406,45 @@ function AppContent({
             <>
               <SearchBar
                 value={searchQuery}
-                onChange={setSearchQuery}
+                onChange={handleSearchChange}
                 onSearch={handleSearch}
+                allGames={allGames}
+                onSelectGame={handleSelectGame}
               />
 
               {currentPage === "search" ? (
                 <div className="home-page">
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "1rem",
+                      marginBottom: "1rem",
+                    }}
+                  >
                     <button
                       onClick={handleClearSearch}
-                      style={{ background: "none", border: "none", color: "#a78bfa", cursor: "pointer", fontSize: "14px", padding: 0 }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#a78bfa",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        padding: 0,
+                      }}
                     >
                       ← Volver
                     </button>
+
                     <p style={{ color: "#aaa", margin: 0 }}>
                       {searching
                         ? "Buscando..."
-                        : `${(searchResults ?? []).length} resultado${(searchResults ?? []).length !== 1 ? "s" : ""} para "${searchQuery}"`}
+                        : `${(searchResults ?? []).length} resultado${
+                            (searchResults ?? []).length !== 1 ? "s" : ""
+                          } para "${searchQuery}"`}
                     </p>
                   </div>
+
                   {!searching && (
                     <GameSection
                       title="Resultados de búsqueda"
@@ -315,15 +459,29 @@ function AppContent({
               ) : (
                 <>
                   {loading && (
-                    <div style={{ textAlign: "center", padding: "4rem", color: "#aaa" }}>
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "4rem",
+                        color: "#aaa",
+                      }}
+                    >
                       Cargando juegos...
                     </div>
                   )}
+
                   {error && (
-                    <div style={{ textAlign: "center", padding: "4rem", color: "#f44" }}>
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "4rem",
+                        color: "#f44",
+                      }}
+                    >
                       {error}
                     </div>
                   )}
+
                   {!loading && !error && (
                     <>
                       {featuredGame && (
@@ -332,8 +490,15 @@ function AppContent({
                           ownedGameIds={ownedGameIds}
                           onAddToCart={handleAddToCart}
                           onSelectGame={handleSelectGame}
+                          onViewInLibrary={isTauri
+                            ? () => {
+                                setLibraryInitialGameId(featuredGame.id)
+                                handleNavigate("library")
+                              }
+                            : undefined}
                         />
                       )}
+
                       <div className="home-page">
                         {discountedGames.length > 0 && (
                           <GameSection
@@ -345,6 +510,7 @@ function AppContent({
                             onSelectGame={handleSelectGame}
                           />
                         )}
+
                         <GameSection
                           title="Juegos disponibles"
                           games={allGames.slice(0, 6)}
@@ -353,6 +519,7 @@ function AppContent({
                           onAddToCart={handleAddToCart}
                           onSelectGame={handleSelectGame}
                         />
+
                         <GameSection
                           title="Juegos recomendados"
                           games={allGames}
@@ -368,8 +535,25 @@ function AppContent({
               )}
             </>
           )}
-          {currentPage === "library" && <Library />}
-          {currentPage === "profile" && <Profile authUser={authUser} />}
+
+          {currentPage === "library" && (
+            <Library
+              initialGameId={libraryInitialGameId}
+              onInitialGameConsumed={() => setLibraryInitialGameId(null)}
+            />
+          )}
+
+          {currentPage === "profile" && (
+            <Profile
+              authUser={authUser}
+              onNavigateToLibrary={
+                isTauri
+                  ? () => handleNavigate("library")
+                  : undefined
+              }
+            />
+          )}
+
           {currentPage === "cart" && (
             <div className="home-page">
               <Cart
@@ -391,7 +575,10 @@ function App() {
 
   return (
     <DownloadProvider isAuthenticated={!!authUser}>
-      <AppContent authUser={authUser} onAuthChange={setAuthUser} />
+      <AppContent
+        authUser={authUser}
+        onAuthChange={setAuthUser}
+      />
     </DownloadProvider>
   )
 }

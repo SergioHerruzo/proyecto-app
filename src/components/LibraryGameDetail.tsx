@@ -1,5 +1,6 @@
 import '../styles/LibraryGameDetail.css'
 import { useState, useEffect } from "react"
+import { Trophy, Lock, Check, Package, Users, Info, Flag, Play, ArrowUp, CheckCircle } from "lucide-react"
 import type { Game } from "../types/games"
 import {
   getGameAchievements,
@@ -196,52 +197,86 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
       </div>
 
       {/* Action bar */}
-      <div className="lgd-actionbar">
-        {isDownloading ? (
-          <div className="lgd-download-progress">
-            <div className="lgd-download-info">
-              <span className="lgd-download-label">
-                {downloadProgress!.status === "queued" ? "En cola..." : `Descargando... ${dlPct}%`}
-              </span>
-              {downloadProgress!.totalBytes > 0 && (
-                <span className="lgd-download-bytes">
-                  {formatBytes(downloadProgress!.downloadedBytes)} / {formatBytes(downloadProgress!.totalBytes)}
-                </span>
-              )}
-            </div>
-            <div className="lgd-download-bar-track">
-              <div className="lgd-download-bar-fill" style={{ width: `${dlPct}%` }} />
-            </div>
-            <button className="lgd-main-btn lgd-main-btn--cancel" onClick={handleCancel}>
-              ✕ Cancelar
-            </button>
-          </div>
-        ) : (
-          <>
-            {isInstalled && (
-              <button className="lgd-main-btn lgd-main-btn--play" onClick={handlePlay}>
-                ▶ JUGAR
-              </button>
-            )}
-            {!isInstalled && releaseBuild && (
-              <button className="lgd-main-btn lgd-main-btn--install" onClick={handleInstallOrUpdate}>
-                ⬇ INSTALAR
-              </button>
-            )}
-            {isInstalled && hasUpdate && releaseBuild && (
-              <button className="lgd-main-btn lgd-main-btn--update" onClick={handleInstallOrUpdate}>
-                ↑ ACTUALIZAR · {releaseBuild.versioName}
-              </button>
-            )}
-            {!releaseBuild && !isInstalled && (
-              <button className="lgd-main-btn lgd-main-btn--play" disabled>
-                {loadingBuilds ? "Cargando..." : "Sin versión disponible"}
-              </button>
-            )}
-          </>
-        )}
+<div className="lgd-actionbar">
+  {isDownloading ? (
+    <div className="lgd-download-progress">
+      <div className="lgd-download-info">
+        <span className="lgd-download-label">
+          {downloadProgress!.status === "queued"
+            ? "En cola..."
+            : `Descargando... ${dlPct}%`}
+        </span>
 
-        <button className="lgd-report-btn" onClick={() => setReportOpen(true)}>⚑ Denunciar</button>
+        {downloadProgress!.totalBytes > 0 && (
+          <span className="lgd-download-bytes">
+            {formatBytes(downloadProgress!.downloadedBytes)} /{" "}
+            {formatBytes(downloadProgress!.totalBytes)}
+          </span>
+        )}
+      </div>
+
+      <div className="lgd-download-bar-track">
+        <div
+          className="lgd-download-bar-fill"
+          style={{ width: `${dlPct}%` }}
+        />
+      </div>
+
+      <button
+        className="lgd-main-btn lgd-main-btn--cancel"
+        onClick={handleCancel}
+      >
+        ✕ Cancelar
+      </button>
+    </div>
+  ) : (
+    <>
+      {isInstalled && (
+        <button
+          className="lgd-main-btn lgd-main-btn--play"
+          onClick={handlePlay}
+        >
+          <Play size={14} /> JUGAR
+        </button>
+      )}
+
+      {!isInstalled && releaseBuild && (
+        <button
+          className="lgd-main-btn lgd-main-btn--install"
+          onClick={handleInstallOrUpdate}
+        >
+          ⬇ INSTALAR
+        </button>
+      )}
+
+      {isInstalled && hasUpdate && releaseBuild && (
+        <button
+          className="lgd-main-btn lgd-main-btn--update"
+          onClick={handleInstallOrUpdate}
+        >
+          <ArrowUp size={14} /> ACTUALIZAR · {releaseBuild.versioName}
+        </button>
+      )}
+
+      {!releaseBuild && !isInstalled && (
+        <button
+          className="lgd-main-btn lgd-main-btn--play"
+          disabled
+        >
+          {loadingBuilds
+            ? "Cargando..."
+            : "Sin versión disponible"}
+        </button>
+      )}
+    </>
+  )}
+
+  <button
+    className="lgd-report-btn"
+    onClick={() => setReportOpen(true)}
+  >
+    <Flag size={13} /> Denunciar
+  </button>
 
         {actionError && (
           <span className="lgd-action-error">{actionError}</span>
@@ -304,49 +339,69 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
 
             {!loadingAchievements && achievements.length === 0 && (
               <div className="lgd-empty-state">
-                <span className="lgd-empty-icon">🏆</span>
+                <Trophy size={36} className="lgd-empty-icon" />
                 <p className="lgd-empty-title">Sin logros</p>
                 <p className="lgd-empty-sub">Este juego no tiene logros disponibles</p>
               </div>
             )}
 
             {!loadingAchievements && achievements.length > 0 && (
-              <div className="lgd-achievement-list">
-                {achievements.map((a) => {
-                  const unlocked = a.isUnlocked || unlockedIds.has(a.id)
-                  return (
-                    <div
-                      key={a.id}
-                      className={`lgd-achievement${unlocked ? " lgd-achievement--unlocked" : ""}`}
-                    >
-                      <div className="lgd-achievement-icon">{unlocked ? "🏆" : "🔒"}</div>
-                      <div className="lgd-achievement-info">
-                        <span className="lgd-achievement-name">{a.name}</span>
-                        <span className="lgd-achievement-desc">{a.description}</span>
-                        {unlocked && a.unlockedAt && (
-                          <span className="lgd-achievement-date">
-                            Desbloqueado el{" "}
-                            {new Date(a.unlockedAt).toLocaleDateString("es-ES")}
-                          </span>
-                        )}
-                      </div>
-                      {!unlocked && (
-                        <button
-                          className="lgd-achievement-btn"
-                          disabled={unlockingId === a.id}
-                          onClick={() => handleUnlock(a.id)}
-                        >
-                          {unlockingId === a.id ? "..." : "Desbloquear"}
-                        </button>
-                      )}
-                      {unlocked && <span className="lgd-achievement-done">✓ Desbloqueado</span>}
-                    </div>
-                  )
-                })}
-              </div>
+  <div className="lgd-achievement-list">
+    {achievements.map((a) => {
+      const unlocked = a.isUnlocked || unlockedIds.has(a.id)
+
+      return (
+        <div
+          key={a.id}
+          className={`lgd-achievement${
+            unlocked ? " lgd-achievement--unlocked" : ""
+          }`}
+        >
+          <div className="lgd-achievement-icon">
+            {unlocked
+              ? <Trophy size={20} />
+              : <Lock size={20} />}
+          </div>
+
+          <div className="lgd-achievement-info">
+            <span className="lgd-achievement-name">
+              {a.name}
+            </span>
+
+            <span className="lgd-achievement-desc">
+              {a.description}
+            </span>
+
+            {unlocked && a.unlockedAt && (
+              <span className="lgd-achievement-date">
+                Desbloqueado el{" "}
+                {new Date(a.unlockedAt).toLocaleDateString("es-ES")}
+              </span>
             )}
           </div>
-        )}
+
+          {!unlocked && (
+            <button
+              className="lgd-achievement-btn"
+              disabled={unlockingId === a.id}
+              onClick={() => handleUnlock(a.id)}
+            >
+              {unlockingId === a.id
+                ? "..."
+                : "Desbloquear"}
+            </button>
+          )}
+
+          {unlocked && (
+            <span className="lgd-achievement-done">
+              <CheckCircle size={13} /> Desbloqueado
+            </span>
+          )}
+        </div>
+      )
+    })}
+  </div>
+)}
 
         {activeTab === "versiones" && (
           <div className="lgd-section-card">
@@ -366,7 +421,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
 
             {!loadingBuilds && !buildsError && builds.length === 0 && (
               <div className="lgd-empty-state">
-                <span className="lgd-empty-icon">📦</span>
+                <Package size={36} className="lgd-empty-icon" />
                 <p className="lgd-empty-title">Sin versiones publicadas</p>
                 <p className="lgd-empty-sub">
                   El desarrollador aún no ha publicado ninguna versión
@@ -379,7 +434,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
                 {hasUpdate && releaseBuild && (
                   <div className="lgd-update-banner">
                     <div className="lgd-update-info">
-                      <span className="lgd-update-icon">↑</span>
+                      <ArrowUp size={16} className="lgd-update-icon" />
                       <div>
                         <span className="lgd-update-title">
                           Nueva versión disponible: {releaseBuild.versioName}
@@ -434,7 +489,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
           <div className="lgd-section-card">
             <span className="lgd-section-label">AMIGOS QUE JUEGAN A ESTE JUEGO</span>
             <div className="lgd-empty-state">
-              <span className="lgd-empty-icon">👥</span>
+              <Users size={36} className="lgd-empty-icon" />
               <p className="lgd-empty-title">Próximamente</p>
               <p className="lgd-empty-sub">Aquí verás qué amigos juegan a este juego</p>
             </div>
@@ -471,7 +526,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
               )}
               {!game.developer && !game.releaseDate && !game.description && (
                 <div className="lgd-empty-state">
-                  <span className="lgd-empty-icon">ℹ️</span>
+                  <Info size={36} className="lgd-empty-icon" />
                   <p className="lgd-empty-title">Sin información disponible</p>
                 </div>
               )}
