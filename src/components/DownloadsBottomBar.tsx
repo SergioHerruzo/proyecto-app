@@ -21,32 +21,32 @@ export default function DownloadsBottomBar({ onNavigateToDownloads }: DownloadsB
 
   return (
     <div className="dbb-bar">
-      {primary ? (
-        <div className="dbb-active">
-          <span className="dbb-label">Descargando</span>
-          <span className="dbb-game-title">{primary.gameTitle}</span>
-          <span className="dbb-pct">{pct}%</span>
-          {extraCount > 0 && (
-            <span className="dbb-extra">+{extraCount} más</span>
-          )}
-          <button
-            className="dbb-cancel"
-            onClick={(e) => { e.stopPropagation(); cancelDownload(primary.gameId) }}
-            title="Cancelar descarga"
-          >
-            ✕
-          </button>
-        </div>
-      ) : (
-        <div className="dbb-idle" />
-      )}
-
-      <button className="dbb-manage-btn" onClick={onNavigateToDownloads}>
-        Gestionar descargas
-        {activeDownloads.length > 0 && (
-          <span className="dbb-badge">{activeDownloads.length}</span>
+      <div className="dbb-inner">
+        {primary && (
+          <div className="dbb-active">
+            <span className="dbb-label">Descargando</span>
+            <span className="dbb-game-title">{primary.gameTitle}</span>
+            <span className="dbb-pct">{pct}%</span>
+            {extraCount > 0 && (
+              <span className="dbb-extra">+{extraCount} más</span>
+            )}
+            <button
+              className="dbb-cancel"
+              onClick={(e) => { e.stopPropagation(); cancelDownload(primary.gameId) }}
+              title="Cancelar descarga"
+            >
+              ✕
+            </button>
+          </div>
         )}
-      </button>
+
+        <button className="dbb-manage-btn" onClick={onNavigateToDownloads}>
+          Gestionar descargas
+          {activeDownloads.length > 0 && (
+            <span className="dbb-badge">{activeDownloads.length}</span>
+          )}
+        </button>
+      </div>
     </div>
   )
 }

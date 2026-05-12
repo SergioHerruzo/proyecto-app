@@ -22,6 +22,7 @@ import ReportModal from "./ReportModal"
 interface LibraryGameDetailProps {
   game: Game
   initialTab?: Tab
+  onBack?: () => void
 }
 
 type Tab = "logros" | "amigos" | "info" | "versiones"
@@ -107,7 +108,7 @@ function LaunchModal({ gameTitle }: { gameTitle: string }) {
   )
 }
 
-export default function LibraryGameDetail({ game, initialTab }: LibraryGameDetailProps) {
+export default function LibraryGameDetail({ game, initialTab, onBack }: LibraryGameDetailProps) {
   const { installedGames, downloads, runningGames, startDownload, cancelDownload, launchGame, killGame, uninstallGame } =
     useDownloads()
 
@@ -325,6 +326,11 @@ export default function LibraryGameDetail({ game, initialTab }: LibraryGameDetai
       {/* Hero */}
       <div className="lgd-hero" style={{ backgroundImage: `url(${game.image})` }}>
         <div className="lgd-hero-overlay">
+          {onBack && (
+            <button className="lgd-back-btn" onClick={onBack}>
+              ← Biblioteca
+            </button>
+          )}
           <h1 className="lgd-hero-title">{game.title}</h1>
         </div>
       </div>

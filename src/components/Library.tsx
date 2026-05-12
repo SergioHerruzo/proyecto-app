@@ -24,6 +24,30 @@ interface LibraryProps {
   onInitialGameConsumed?: () => void
 }
 
+async function enrichCollections(
+  list: Collection[],
+  gameById: Map<string, Game>,
+): Promise<Collection[]> {
+  return Promise.all(
+    list.map(async (col) => {
+      if (col.previewUrls?.some(u => u)) return col
+      try {
+        const full = await getCollectionById(col.id)
+        const previews = full.games
+          .slice(0, 4)
+          .map(g => {
+            const owned = gameById.get(g.id)
+            return g.image || owned?.icon || owned?.image || ''
+          })
+          .filter(Boolean)
+        return { ...col, previewUrls: previews }
+      } catch {
+        return col
+      }
+    })
+  )
+}
+
 export default function Library({ initialGameId, onInitialGameConsumed }: LibraryProps) {
   const [ownedGames, setOwnedGames] = useState<Game[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
@@ -36,29 +60,47 @@ export default function Library({ initialGameId, onInitialGameConsumed }: Librar
 
   const { installedGames, openInstallFolder, uninstallGame } = useDownloads()
 
-  const loadCollections = useCallback(async () => {
+  // Refresh collections (used after add/remove game) — also re-enriches with current ownedGames
+  const loadCollections = useCallback(async (currentOwnedGames: Game[]) => {
     try {
       const page = await getUserCollections()
-      setCollections(page.items.map(mapCollectionListItem))
+      const list = page.items.map(mapCollectionListItem)
+      const gameById = new Map(currentOwnedGames.map(g => [g.id, g]))
+      const enriched = await enrichCollections(list, gameById)
+      setCollections(enriched)
     } catch (err) {
       console.error("[Library] getUserCollections failed:", err)
     }
   }, [])
 
+  // Initial load: both requests run in parallel, then enrich collections with ownedGames
   useEffect(() => {
-    Promise.all([
-      getUserLibrary().then(summaries => {
-        console.log("[Library] getUserLibrary result:", summaries)
-        setOwnedGames(summaries.map(mapGameSummary))
-      }),
-      loadCollections(),
-    ])
-      .catch(err => {
-        console.error("[Library] initial load failed:", err)
-        setFetchError(err?.message ?? "Error desconocido")
-      })
-      .finally(() => setLoading(false))
-  }, [loadCollections])
+    let cancelled = false
+    async function init() {
+      try {
+        const [summaries, collectionPage] = await Promise.all([
+          getUserLibrary(),
+          getUserCollections(),
+        ])
+        if (cancelled) return
+
+        const games = summaries.map(mapGameSummary)
+        const gameById = new Map(games.map(g => [g.id, g]))
+        const list = collectionPage.items.map(mapCollectionListItem)
+        const enriched = await enrichCollections(list, gameById)
+
+        if (cancelled) return
+        setOwnedGames(games)
+        setCollections(enriched)
+      } catch (err: unknown) {
+        if (!cancelled) setFetchError((err as Error)?.message ?? "Error desconocido")
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    init()
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     if (!initialGameId || loading || ownedGames.length === 0) return
@@ -100,7 +142,7 @@ export default function Library({ initialGameId, onInitialGameConsumed }: Librar
 
   const handleAddGameToCollection = async (collectionId: string, gameId: string) => {
     await addGameToCollection(collectionId, gameId)
-    loadCollections()
+    loadCollections(ownedGames)
     if (selectedCollection?.id === collectionId) {
       try {
         const full = await getCollectionById(collectionId)
@@ -113,7 +155,7 @@ export default function Library({ initialGameId, onInitialGameConsumed }: Librar
 
   const handleRemoveGameFromCollection = async (collectionId: string, gameId: string) => {
     await removeGameFromCollection(collectionId, gameId)
-    loadCollections()
+    loadCollections(ownedGames)
     if (selectedCollection?.id === collectionId) {
       setSelectedCollection(prev => prev
         ? { ...prev, games: prev.games.filter(g => g.id !== gameId) }
@@ -191,6 +233,7 @@ export default function Library({ initialGameId, onInitialGameConsumed }: Librar
             key={selectedGame.id}
             game={selectedGame}
             initialTab={openBuildsTab ? "versiones" : undefined}
+            onBack={() => { setSelectedGame(null); setOpenBuildsTab(false) }}
           />
         ) : selectedCollection ? (
           <CollectionDetail

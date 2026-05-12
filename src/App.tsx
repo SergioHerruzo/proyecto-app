@@ -361,8 +361,6 @@ function AppContent({
         theme={theme}
         onToggleTheme={toggleTheme}
         isDesktop={isTauri}
-        activeDownloads={activeDownloads}
-        onToggleDownloads={() => setCurrentPage("downloads")}
       />
 
       {authModalOpen && !authUser && (

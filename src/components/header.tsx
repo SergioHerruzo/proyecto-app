@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { Sun, Moon } from 'lucide-react'
 import '../styles/Header.css'
 
 type Page = "home" | "library" | "cart" | "profile"
@@ -17,8 +18,6 @@ interface HeaderProps {
   theme?: Theme
   onToggleTheme?: () => void
   isDesktop?: boolean
-  activeDownloads?: number
-  onToggleDownloads?: () => void
 }
 
 export default function Header({
@@ -34,8 +33,6 @@ export default function Header({
   theme = "dark",
   onToggleTheme,
   isDesktop = false,
-  activeDownloads = 0,
-  onToggleDownloads,
 }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -110,33 +107,6 @@ export default function Header({
           </a>
         )}
 
-{isDesktop && isAuthenticated && (
-  <button
-    className="downloads-btn"
-    onClick={onToggleDownloads}
-    title="Ver descargas"
-  >
-    ↓
-
-    {activeDownloads > 0 && (
-      <span className="downloads-badge">
-        {activeDownloads}
-      </span>
-    )}
-  </button>
-)}
-
-<button
-  className="theme-toggle"
-  onClick={onToggleTheme}
-  title={
-    theme === "dark"
-      ? "Cambiar a tema claro"
-      : "Cambiar a tema oscuro"
-  }
->
-  {theme === "dark" ? "☀" : "🌙"}
-</button>
         {isAuthenticated ? (
           <div className="profile-menu" ref={menuRef}>
             <button
@@ -158,7 +128,9 @@ export default function Header({
                   className="profile-dropdown-item"
                   onClick={() => { onToggleTheme?.(); setMenuOpen(false) }}
                 >
-                  {theme === "dark" ? "☀ Tema claro" : "🌙 Tema oscuro"}
+                  {theme === "dark"
+                    ? <><Sun size={14} /> Tema claro</>
+                    : <><Moon size={14} /> Tema oscuro</>}
                 </button>
                 <button
                   className="profile-dropdown-item profile-dropdown-signout"
@@ -176,7 +148,7 @@ export default function Header({
               onClick={onToggleTheme}
               title={theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
             >
-              {theme === "dark" ? "☀" : "🌙"}
+              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
             </button>
             <button className="btn-outline" onClick={onSignIn}>Iniciar sesión</button>
             <button className="btn-primary" onClick={onRegister}>Registrarse</button>

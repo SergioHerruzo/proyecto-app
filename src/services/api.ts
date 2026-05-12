@@ -342,11 +342,12 @@ export async function getCollectionById(collectionId: string): Promise<Collectio
   })
   if (!res.ok) throw new Error(`Error ${res.status}`)
   const data: GameCollectionDetailsResponse = await res.json()
+  const games = data.games.map(mapApiGameListItem)
   return {
     id: data.id,
     name: data.name,
-    games: data.games.map(mapApiGameListItem),
-    previewUrls: data.games.slice(0, 4).map(g => g.artworks?.[0]?.smallImageUrl ?? ""),
+    games,
+    previewUrls: games.slice(0, 4).map(g => g.image).filter(Boolean),
   }
 }
 
