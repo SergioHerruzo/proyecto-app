@@ -1,0 +1,109 @@
+.dbb-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: var(--bg-surface, #1a1a2e);
+  border-top: 1px solid var(--border-1, #2a2a3e);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  z-index: 900;
+  font-size: 13px;
+}
+
+.dbb-active {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dbb-idle {
+  flex: 1;
+}
+
+.dbb-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dbb-game-title {
+  color: var(--text-2, #e0e0e0);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.dbb-pct {
+  color: var(--text-4, #aaa);
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dbb-extra {
+  font-size: 11px;
+  color: var(--text-5, #777);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dbb-cancel {
+  background: none;
+  border: none;
+  color: var(--text-5, #777);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.dbb-cancel:hover {
+  color: #ef4444;
+}
+
+.dbb-manage-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--border-2, #333);
+  color: var(--text-4, #aaa);
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.dbb-manage-btn:hover {
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
+
+.dbb-badge {
+  background: #a78bfa;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+}

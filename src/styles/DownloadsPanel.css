@@ -1,0 +1,196 @@
+.dlp-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.dlp-panel {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 360px;
+  max-height: 480px;
+  background: var(--surface, #1e1e2e);
+  border: 1px solid var(--border, #333);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1001;
+}
+
+.dlp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border, #333);
+}
+
+.dlp-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text, #e0e0e0);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dlp-close {
+  background: none;
+  border: none;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.dlp-close:hover {
+  color: var(--text, #e0e0e0);
+}
+
+.dlp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  gap: 0.5rem;
+  color: var(--text-muted, #888);
+  font-size: 0.85rem;
+}
+
+.dlp-empty-icon {
+  font-size: 1.8rem;
+  opacity: 0.4;
+}
+
+.dlp-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dlp-item {
+  background: var(--surface-alt, #252535);
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid transparent;
+}
+
+.dlp-item--downloading {
+  border-color: rgba(167, 139, 250, 0.25);
+}
+
+.dlp-item--completed {
+  border-color: rgba(52, 211, 153, 0.2);
+}
+
+.dlp-item--error {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.dlp-item--cancelled {
+  opacity: 0.6;
+}
+
+.dlp-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.dlp-game-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text, #e0e0e0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dlp-cancel-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.dlp-cancel-btn:hover {
+  color: #ef4444;
+}
+
+.dlp-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.dlp-bar-track {
+  flex: 1;
+  height: 5px;
+  background: var(--surface, #1e1e2e);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dlp-bar-fill {
+  height: 100%;
+  background: var(--accent, #a78bfa);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.dlp-item--completed .dlp-bar-fill {
+  background: #34d399;
+}
+
+.dlp-item--error .dlp-bar-fill {
+  background: #ef4444;
+}
+
+.dlp-pct {
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.dlp-item-bottom {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dlp-status {
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+  flex: 1;
+}
+
+.dlp-item--completed .dlp-status {
+  color: #34d399;
+}
+
+.dlp-item--error .dlp-status {
+  color: #f87171;
+  word-break: break-word;
+}
+
+.dlp-bytes,
+.dlp-files {
+  font-size: 0.72rem;
+  color: var(--text-muted, #666);
+  white-space: nowrap;
+}
