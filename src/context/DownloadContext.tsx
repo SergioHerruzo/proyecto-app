@@ -11,9 +11,14 @@ import {
   getInstalledGames,
   downloadBuild,
   launchGame as tauriLaunchGame,
+  killGame as tauriKillGame,
+  getRunningGames as tauriGetRunningGames,
+  openInstallFolder as tauriOpenInstallFolder,
   cancelDownload as tauriCancelDownload,
   uninstallGame as tauriUninstallGame,
   onDownloadProgress,
+  onGameLaunched,
+  onGameStopped,
   type InstallInfo,
   type DownloadProgress,
   type DownloadBuildParams,
@@ -25,9 +30,12 @@ import type { Game } from "../types/games"
 interface DownloadContextValue {
   downloads: Record<string, DownloadProgress>
   installedGames: Record<string, InstallInfo>
+  runningGames: Set<string>
   startDownload: (game: Game, build: GameBuildUserResponse) => Promise<void>
   cancelDownload: (gameId: string) => Promise<void>
   launchGame: (gameId: string) => Promise<void>
+  killGame: (gameId: string) => Promise<void>
+  openInstallFolder: (gameId: string) => Promise<void>
   uninstallGame: (gameId: string) => Promise<void>
   refreshInstalled: () => Promise<void>
 }
@@ -48,7 +56,10 @@ interface DownloadProviderProps {
 export function DownloadProvider({ children, isAuthenticated }: DownloadProviderProps) {
   const [downloads, setDownloads] = useState<Record<string, DownloadProgress>>({})
   const [installedGames, setInstalledGames] = useState<Record<string, InstallInfo>>({})
+  const [runningGames, setRunningGames] = useState<Set<string>>(new Set())
   const unlistenRef = useRef<(() => void) | null>(null)
+  const unlistenLaunchedRef = useRef<(() => void) | null>(null)
+  const unlistenStoppedRef = useRef<(() => void) | null>(null)
 
   const refreshInstalled = useCallback(async () => {
     if (!isTauri) return
@@ -85,6 +96,46 @@ export function DownloadProvider({ children, isAuthenticated }: DownloadProvider
     }
   }, [refreshInstalled])
 
+  // Subscribe to game-launched / game-stopped events
+  useEffect(() => {
+    if (!isTauri) return
+    let active = true
+
+    onGameLaunched((gameId) => {
+      if (!active) return
+      setRunningGames((prev) => new Set(prev).add(gameId))
+    }).then((unlisten) => {
+      if (!active) unlisten()
+      else unlistenLaunchedRef.current = unlisten
+    })
+
+    onGameStopped((gameId) => {
+      if (!active) return
+      setRunningGames((prev) => {
+        const next = new Set(prev)
+        next.delete(gameId)
+        return next
+      })
+    }).then((unlisten) => {
+      if (!active) unlisten()
+      else unlistenStoppedRef.current = unlisten
+    })
+
+    // Sync running games on mount
+    tauriGetRunningGames().then((ids) => {
+      if (!active) return
+      setRunningGames(new Set(ids))
+    }).catch(() => {})
+
+    return () => {
+      active = false
+      unlistenLaunchedRef.current?.()
+      unlistenLaunchedRef.current = null
+      unlistenStoppedRef.current?.()
+      unlistenStoppedRef.current = null
+    }
+  }, [])
+
   // Load installed games when user is authenticated (Tauri only)
   useEffect(() => {
     if (!isTauri) return
@@ -119,12 +170,32 @@ export function DownloadProvider({ children, isAuthenticated }: DownloadProvider
 
   const cancelDownload = useCallback(async (gameId: string) => {
     if (!isTauri) return
+    // Optimistic update — show cancelled immediately, Rust will confirm via event
+    setDownloads((prev) => {
+      if (!prev[gameId]) return prev
+      return { ...prev, [gameId]: { ...prev[gameId], status: "cancelled" } }
+    })
     await tauriCancelDownload(gameId)
   }, [])
 
   const launchGame = useCallback(async (gameId: string) => {
     if (!isTauri) return
     await tauriLaunchGame(gameId)
+  }, [])
+
+  const killGame = useCallback(async (gameId: string) => {
+    if (!isTauri) return
+    await tauriKillGame(gameId)
+    setRunningGames((prev) => {
+      const next = new Set(prev)
+      next.delete(gameId)
+      return next
+    })
+  }, [])
+
+  const openInstallFolder = useCallback(async (gameId: string) => {
+    if (!isTauri) return
+    await tauriOpenInstallFolder(gameId)
   }, [])
 
   const uninstallGame = useCallback(async (gameId: string) => {
@@ -147,9 +218,12 @@ export function DownloadProvider({ children, isAuthenticated }: DownloadProvider
       value={{
         downloads,
         installedGames,
+        runningGames,
         startDownload,
         cancelDownload,
         launchGame,
+        killGame,
+        openInstallFolder,
         uninstallGame,
         refreshInstalled,
       }}

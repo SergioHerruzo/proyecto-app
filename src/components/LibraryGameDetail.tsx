@@ -1,5 +1,5 @@
 import '../styles/LibraryGameDetail.css'
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import type { Game } from "../types/games"
 import {
   getGameAchievements,
@@ -20,6 +20,7 @@ import ReportModal from "./ReportModal"
 
 interface LibraryGameDetailProps {
   game: Game
+  initialTab?: Tab
 }
 
 type Tab = "logros" | "amigos" | "info" | "versiones"
@@ -39,11 +40,77 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
 }
 
-export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
-  const { installedGames, downloads, startDownload, cancelDownload, launchGame, uninstallGame } =
+// ---- Switch Version Modal ----
+function SwitchVersionModal({
+  isInstalled,
+  isDownloading,
+  installedVersionName,
+  targetVersionName,
+  onConfirm,
+  onCancel,
+}: {
+  isInstalled: boolean
+  isDownloading: boolean
+  installedVersionName?: string
+  targetVersionName: string
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  let message: string
+  if (isInstalled && isDownloading) {
+    message = `Hay una descarga activa y el juego ya está instalado (${installedVersionName}). La descarga será cancelada y el juego reinstalado con la versión "${targetVersionName}".`
+  } else if (isDownloading) {
+    message = `Hay una descarga activa en curso. Será cancelada para instalar la versión "${targetVersionName}".`
+  } else {
+    message = `El juego ya tiene instalada la versión "${installedVersionName}". Si continúas, será reemplazada por "${targetVersionName}".`
+  }
+
+  return (
+    <div className="lgd-modal-backdrop" onClick={onCancel}>
+      <div className="lgd-modal lgd-modal--confirm" onClick={e => e.stopPropagation()}>
+        <div className="lgd-modal-icon lgd-modal-icon--warn">⚠</div>
+        <p className="lgd-modal-title">Cambiar versión</p>
+        <p className="lgd-modal-message">{message}</p>
+        <div className="lgd-modal-actions">
+          <button className="lgd-modal-confirm-btn" onClick={onConfirm}>Continuar</button>
+          <button className="lgd-modal-dismiss-btn" onClick={onCancel}>Cancelar</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---- Error Modal ----
+function ErrorModal({ message, onClose }: { message: string; onClose: () => void }) {
+  return (
+    <div className="lgd-modal-backdrop" onClick={onClose}>
+      <div className="lgd-modal lgd-modal--error" onClick={e => e.stopPropagation()}>
+        <div className="lgd-modal-icon">⚠</div>
+        <p className="lgd-modal-message">{message}</p>
+        <button className="lgd-modal-close-btn" onClick={onClose}>Cerrar</button>
+      </div>
+    </div>
+  )
+}
+
+// ---- Launch Modal ----
+function LaunchModal({ gameTitle }: { gameTitle: string }) {
+  return (
+    <div className="lgd-modal-backdrop lgd-modal-backdrop--transparent">
+      <div className="lgd-modal lgd-modal--launch" onClick={e => e.stopPropagation()}>
+        <div className="lgd-launch-spinner" />
+        <p className="lgd-modal-title">Iniciando {gameTitle}...</p>
+        <p className="lgd-modal-sub">El juego se está abriendo</p>
+      </div>
+    </div>
+  )
+}
+
+export default function LibraryGameDetail({ game, initialTab }: LibraryGameDetailProps) {
+  const { installedGames, downloads, runningGames, startDownload, cancelDownload, launchGame, killGame, uninstallGame } =
     useDownloads()
 
-  const [activeTab, setActiveTab] = useState<Tab>("info")
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab ?? "info")
   const [achievements, setAchievements] = useState<AchievementResponse[]>([])
   const [loadingAchievements, setLoadingAchievements] = useState(false)
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set())
@@ -54,8 +121,13 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
   const [loadingBuilds, setLoadingBuilds] = useState(false)
   const [buildsError, setBuildsError] = useState<string | null>(null)
 
-  const [actionError, setActionError] = useState<string | null>(null)
+  const [errorModal, setErrorModal] = useState<string | null>(null)
   const [uninstalling, setUninstalling] = useState(false)
+
+  // Launch modal state
+  const [launchModalOpen, setLaunchModalOpen] = useState(false)
+  const [isLaunching, setIsLaunching] = useState(false)
+  const launchStartRef = useRef<number>(0)
 
   // Install confirmation modal state
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -64,10 +136,33 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState<string | null>(null)
 
+  // Switch version modal state
+  const [switchTarget, setSwitchTarget] = useState<GameBuildUserResponse | null>(null)
+  const [switchVersionLoading, setSwitchVersionLoading] = useState(false)
+
   const installedInfo = installedGames[game.id] ?? null
   const downloadProgress = downloads[game.id] ?? null
   const isDownloading =
     downloadProgress?.status === "downloading" || downloadProgress?.status === "queued"
+  const isRunning = runningGames.has(game.id)
+
+  // When game starts running, close the modal — but keep it visible at least 400ms
+  useEffect(() => {
+    if (isRunning && isLaunching) {
+      const elapsed = Date.now() - launchStartRef.current
+      const remaining = Math.max(0, 400 - elapsed)
+      const timer = setTimeout(() => {
+        setIsLaunching(false)
+        setLaunchModalOpen(false)
+      }, remaining)
+      return () => clearTimeout(timer)
+    }
+  }, [isRunning, isLaunching])
+
+  // If initialTab changes (e.g. from context menu "manage builds"), switch tab
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab)
+  }, [initialTab])
 
   const releaseBuild = builds.find((b) => b.isReleaseBuild) ?? null
   const hasUpdate =
@@ -78,57 +173,83 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
   const isInstalled = installedInfo !== null
 
   useEffect(() => {
+    setAchievements([])
+    setUnlockedIds(new Set())
+  }, [game.id])
+
+  useEffect(() => {
     if (activeTab !== "logros") return
-    if (achievements.length > 0) return
 
     const userId = getCurrentUserId()
-    if (!userId) {
-      setLoadingAchievements(true)
-      getCurrentUser()
-        .then((profile) => getGameAchievements(game.id, profile.userId))
-        .then((list) => setAchievements(list))
-        .catch(console.error)
-        .finally(() => setLoadingAchievements(false))
-      return
-    }
-
     setLoadingAchievements(true)
-    getGameAchievements(game.id, userId)
+    const fetch = userId
+      ? getGameAchievements(game.id, userId)
+      : getCurrentUser().then((profile) => getGameAchievements(game.id, profile.userId))
+
+    fetch
       .then((list) => setAchievements(list))
       .catch(console.error)
       .finally(() => setLoadingAchievements(false))
-  }, [activeTab, game.id, achievements.length])
+  }, [activeTab, game.id])
 
   useEffect(() => {
-    if (builds.length > 0) return
-
-    setLoadingBuilds(true)
+    setBuilds([])
     setBuildsError(null)
+    setLoadingBuilds(true)
     getGameBuildsAsUser(game.id)
       .then((page) => setBuilds(page.items))
       .catch(() => setBuildsError("No se pudieron cargar las versiones."))
       .finally(() => setLoadingBuilds(false))
-  }, [game.id, builds.length])
+  }, [game.id])
+
+  function openInstallConfirm(buildDetail: GameBuildUserResponse) {
+    setPendingBuild(buildDetail)
+    setPreview(null)
+    setPreviewError(null)
+    setPreviewLoading(true)
+    setConfirmOpen(true)
+    const token = getAuthToken() ?? ""
+    getBuildPreview(buildDetail.manifestUrl, token)
+      .then((p) => setPreview(p))
+      .catch((e: unknown) => setPreviewError(e instanceof Error ? e.message : String(e)))
+      .finally(() => setPreviewLoading(false))
+  }
 
   async function handleInstallOrUpdate() {
     if (!releaseBuild) return
-    setActionError(null)
     try {
-      const buildDetail: GameBuildUserResponse = await getGameBuildById(releaseBuild.id)
-      // Open confirmation modal and fetch preview in parallel
-      setPendingBuild(buildDetail)
-      setPreview(null)
-      setPreviewError(null)
-      setPreviewLoading(true)
-      setConfirmOpen(true)
-      const token = getAuthToken() ?? ""
-      getBuildPreview(buildDetail.manifestUrl, token)
-        .then((p) => setPreview(p))
-        .catch((e: unknown) => setPreviewError(e instanceof Error ? e.message : String(e)))
-        .finally(() => setPreviewLoading(false))
+      const buildDetail = await getGameBuildById(releaseBuild.id)
+      openInstallConfirm(buildDetail)
     } catch (e: unknown) {
-      setActionError(e instanceof Error ? e.message : String(e))
+      setErrorModal(e instanceof Error ? e.message : String(e))
     }
+  }
+
+  async function handleSelectBuild(build: GameBuildAsUserListItem) {
+    setSwitchVersionLoading(true)
+    try {
+      const buildDetail = await getGameBuildById(build.id)
+      const hasConflict = isInstalled || isDownloading
+      if (hasConflict) {
+        setSwitchTarget(buildDetail)
+      } else {
+        openInstallConfirm(buildDetail)
+      }
+    } catch (e: unknown) {
+      setErrorModal(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSwitchVersionLoading(false)
+    }
+  }
+
+  async function handleConfirmSwitch() {
+    if (!switchTarget) return
+    const buildDetail = switchTarget
+    setSwitchTarget(null)
+    if (isDownloading) {
+      await cancelDownload(game.id)
+    }
+    openInstallConfirm(buildDetail)
   }
 
   async function handleConfirmInstall() {
@@ -137,19 +258,32 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
     try {
       await startDownload(game, pendingBuild)
     } catch (e: unknown) {
-      setActionError(e instanceof Error ? e.message : String(e))
+      setErrorModal(e instanceof Error ? e.message : String(e))
     }
     setPendingBuild(null)
     setPreview(null)
   }
 
   async function handlePlay() {
-    setActionError(null)
+    launchStartRef.current = Date.now()
+    setLaunchModalOpen(true)
+    setIsLaunching(true)
     try {
       await launchGame(game.id)
     } catch (e: unknown) {
-      setActionError(e instanceof Error ? e.message : String(e))
+      setIsLaunching(false)
+      setLaunchModalOpen(false)
+      setErrorModal(e instanceof Error ? e.message : String(e))
     }
+  }
+
+  async function handleKillGame() {
+    try {
+      await killGame(game.id)
+    } catch (e: unknown) {
+      setErrorModal(e instanceof Error ? e.message : String(e))
+    }
+    setLaunchModalOpen(false)
   }
 
   async function handleCancel() {
@@ -158,11 +292,10 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
 
   async function handleUninstall() {
     setUninstalling(true)
-    setActionError(null)
     try {
       await uninstallGame(game.id)
     } catch (e: unknown) {
-      setActionError(e instanceof Error ? e.message : String(e))
+      setErrorModal(e instanceof Error ? e.message : String(e))
     } finally {
       setUninstalling(false)
     }
@@ -198,31 +331,32 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
       {/* Action bar */}
       <div className="lgd-actionbar">
         {isDownloading ? (
-          <div className="lgd-download-progress">
-            <div className="lgd-download-info">
-              <span className="lgd-download-label">
-                {downloadProgress!.status === "queued" ? "En cola..." : `Descargando... ${dlPct}%`}
+          <div className="lgd-download-compact">
+            <span className="lgd-download-label">
+              {downloadProgress!.status === "queued" ? "En cola" : `Descargando`}
+            </span>
+            <span className="lgd-download-pct">{dlPct}%</span>
+            {downloadProgress!.totalBytes > 0 && (
+              <span className="lgd-download-bytes">
+                {formatBytes(downloadProgress!.downloadedBytes)} / {formatBytes(downloadProgress!.totalBytes)}
               </span>
-              {downloadProgress!.totalBytes > 0 && (
-                <span className="lgd-download-bytes">
-                  {formatBytes(downloadProgress!.downloadedBytes)} / {formatBytes(downloadProgress!.totalBytes)}
-                </span>
-              )}
-            </div>
-            <div className="lgd-download-bar-track">
-              <div className="lgd-download-bar-fill" style={{ width: `${dlPct}%` }} />
-            </div>
-            <button className="lgd-main-btn lgd-main-btn--cancel" onClick={handleCancel}>
-              ✕ Cancelar
+            )}
+            <button className="lgd-cancel-btn" onClick={handleCancel}>
+              Cancelar ✕
             </button>
           </div>
         ) : (
           <>
-            {isInstalled && (
+            {isRunning ? (
+              <button className="lgd-main-btn lgd-main-btn--stop" onClick={handleKillGame}>
+                ■ CERRAR JUEGO
+              </button>
+            ) : isInstalled ? (
               <button className="lgd-main-btn lgd-main-btn--play" onClick={handlePlay}>
                 ▶ JUGAR
               </button>
-            )}
+            ) : null}
+
             {!isInstalled && releaseBuild && (
               <button className="lgd-main-btn lgd-main-btn--install" onClick={handleInstallOrUpdate}>
                 ⬇ INSTALAR
@@ -242,10 +376,6 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
         )}
 
         <button className="lgd-report-btn" onClick={() => setReportOpen(true)}>⚑ Denunciar</button>
-
-        {actionError && (
-          <span className="lgd-action-error">{actionError}</span>
-        )}
 
         <div className="lgd-stats">
           <div className="lgd-stat">
@@ -395,24 +525,45 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
                   </div>
                 )}
                 <div className="lgd-build-list">
-                  {builds.map((b) => (
-                    <div
-                      key={b.id}
-                      className={`lgd-build-row${b.isReleaseBuild ? " lgd-build-row--release" : ""}`}
-                    >
-                      <div className="lgd-build-info">
-                        <span className="lgd-build-name">{b.versioName}</span>
-                        {b.isReleaseBuild && (
-                          <span className="lgd-build-badge">Versión actual</span>
-                        )}
-                        {installedInfo?.buildId === b.id && (
-                          <span className="lgd-build-badge lgd-build-badge--installed">
-                            Instalada
-                          </span>
+                  {builds.map((b) => {
+                    const isThisInstalled = installedInfo?.buildId === b.id
+                    const isThisDownloading =
+                      downloadProgress?.buildId === b.id && isDownloading
+
+                    return (
+                      <div
+                        key={b.id}
+                        className={`lgd-build-row${b.isReleaseBuild ? " lgd-build-row--release" : ""}`}
+                      >
+                        <div className="lgd-build-info">
+                          <span className="lgd-build-name">{b.versioName}</span>
+                          {b.isReleaseBuild && (
+                            <span className="lgd-build-badge">Recomendada</span>
+                          )}
+                          {isThisInstalled && (
+                            <span className="lgd-build-badge lgd-build-badge--installed">
+                              Instalada
+                            </span>
+                          )}
+                          {isThisDownloading && (
+                            <span className="lgd-build-badge lgd-build-badge--downloading">
+                              Descargando {dlPct}%
+                            </span>
+                          )}
+                        </div>
+
+                        {!isThisInstalled && !isThisDownloading && (
+                          <button
+                            className="lgd-build-install-btn"
+                            onClick={() => handleSelectBuild(b)}
+                            disabled={switchVersionLoading}
+                          >
+                            ⬇ Instalar
+                          </button>
                         )}
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
                 {isInstalled && (
                   <div className="lgd-uninstall-row">
@@ -480,6 +631,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
         )}
       </div>
 
+      {/* Install confirmation modal */}
       {confirmOpen && pendingBuild && (
         <InstallConfirmModal
           gameTitle={game.title}
@@ -492,6 +644,7 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
         />
       )}
 
+      {/* Report modal */}
       {reportOpen && (
         <ReportModal
           gameName={game.title}
@@ -501,6 +654,26 @@ export default function LibraryGameDetail({ game }: LibraryGameDetailProps) {
           }}
         />
       )}
+
+      {/* Switch version confirmation modal */}
+      {switchTarget && (
+        <SwitchVersionModal
+          isInstalled={isInstalled}
+          isDownloading={isDownloading}
+          installedVersionName={installedInfo?.versionName}
+          targetVersionName={switchTarget.versionName}
+          onConfirm={handleConfirmSwitch}
+          onCancel={() => setSwitchTarget(null)}
+        />
+      )}
+
+      {/* Error modal */}
+      {errorModal && (
+        <ErrorModal message={errorModal} onClose={() => setErrorModal(null)} />
+      )}
+
+      {/* Launch modal — shows while game is starting, auto-closes on game-launched */}
+      {launchModalOpen && <LaunchModal gameTitle={game.title} />}
     </div>
   )
 }

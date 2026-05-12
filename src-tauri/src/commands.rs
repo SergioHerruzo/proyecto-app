@@ -9,6 +9,7 @@ use tauri::{AppHandle, Emitter, Manager, State};
 pub struct DownloadManagerState {
     pub downloads: Arc<Mutex<HashMap<String, DownloadProgress>>>,
     pub cancel_tokens: Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>,
+    pub running_games: Arc<Mutex<HashMap<String, u32>>>,
 }
 
 impl DownloadManagerState {
@@ -16,6 +17,7 @@ impl DownloadManagerState {
         Self {
             downloads: Arc::new(Mutex::new(HashMap::new())),
             cancel_tokens: Arc::new(Mutex::new(HashMap::new())),
+            running_games: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 }
@@ -205,7 +207,11 @@ pub async fn download_build(
 }
 
 #[tauri::command]
-pub async fn launch_game(app: AppHandle, game_id: String) -> Result<(), String> {
+pub async fn launch_game(
+    app: AppHandle,
+    state: State<'_, DownloadManagerState>,
+    game_id: String,
+) -> Result<(), String> {
     let info = load_install_info(&app, &game_id)
         .ok_or_else(|| "El juego no está instalado".to_string())?;
 
@@ -222,10 +228,99 @@ pub async fn launch_game(app: AppHandle, game_id: String) -> Result<(), String> 
         ));
     }
 
-    std::process::Command::new(&exe_path)
+    let mut child = std::process::Command::new(&exe_path)
         .current_dir(&game_dir)
         .spawn()
         .map_err(|e| format!("Error al lanzar el juego: {}", e))?;
+
+    let pid = child.id();
+    {
+        let mut running = state.running_games.lock().unwrap();
+        running.insert(game_id.clone(), pid);
+    }
+
+    let _ = app.emit("game-launched", &game_id);
+
+    // Monitor process exit in background so we can emit game-stopped when
+    // the user closes the game manually (not via kill_game).
+    let app_monitor = app.clone();
+    let running_arc = Arc::clone(&state.running_games);
+    let game_id_monitor = game_id.clone();
+    std::thread::spawn(move || {
+        let _ = child.wait();
+        let mut running = running_arc.lock().unwrap();
+        running.remove(&game_id_monitor);
+        drop(running);
+        let _ = app_monitor.emit("game-stopped", &game_id_monitor);
+    });
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn kill_game(
+    app: AppHandle,
+    state: State<'_, DownloadManagerState>,
+    game_id: String,
+) -> Result<(), String> {
+    let pid = {
+        let running = state.running_games.lock().unwrap();
+        running.get(&game_id).cloned()
+    };
+
+    if let Some(pid) = pid {
+        #[cfg(target_os = "windows")]
+        std::process::Command::new("taskkill")
+            .args(["/PID", &pid.to_string(), "/F"])
+            .output()
+            .map_err(|e| format!("Error al cerrar el juego: {}", e))?;
+
+        #[cfg(not(target_os = "windows"))]
+        unsafe {
+            libc::kill(pid as i32, libc::SIGTERM);
+        }
+
+        let mut running = state.running_games.lock().unwrap();
+        running.remove(&game_id);
+
+        let _ = app.emit("game-stopped", &game_id);
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_running_games(
+    state: State<'_, DownloadManagerState>,
+) -> Result<Vec<String>, String> {
+    let running = state.running_games.lock().unwrap();
+    Ok(running.keys().cloned().collect())
+}
+
+#[tauri::command]
+pub async fn open_install_folder(app: AppHandle, game_id: String) -> Result<(), String> {
+    let game_dir = game_files_dir(&app, &game_id);
+    if !game_dir.exists() {
+        return Err("El juego no está instalado".to_string());
+    }
+
+    #[cfg(target_os = "windows")]
+    std::process::Command::new("explorer")
+        .arg(&game_dir)
+        .spawn()
+        .map_err(|e| format!("Error al abrir carpeta: {}", e))?;
+
+    #[cfg(target_os = "macos")]
+    std::process::Command::new("open")
+        .arg(&game_dir)
+        .spawn()
+        .map_err(|e| format!("Error al abrir carpeta: {}", e))?;
+
+    #[cfg(target_os = "linux")]
+    std::process::Command::new("xdg-open")
+        .arg(&game_dir)
+        .spawn()
+        .map_err(|e| format!("Error al abrir carpeta: {}", e))?;
 
     Ok(())
 }

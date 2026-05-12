@@ -51,6 +51,15 @@ export const downloadBuild = (params: DownloadBuildParams): Promise<void> =>
 export const launchGame = (gameId: string): Promise<void> =>
   invoke("launch_game", { gameId })
 
+export const killGame = (gameId: string): Promise<void> =>
+  invoke("kill_game", { gameId })
+
+export const getRunningGames = (): Promise<string[]> =>
+  invoke("get_running_games")
+
+export const openInstallFolder = (gameId: string): Promise<void> =>
+  invoke("open_install_folder", { gameId })
+
 export const cancelDownload = (gameId: string): Promise<void> =>
   invoke("cancel_download", { gameId })
 
@@ -64,4 +73,12 @@ export function onDownloadProgress(
   cb: (progress: DownloadProgress) => void,
 ): Promise<UnlistenFn> {
   return listen<DownloadProgress>("download-progress", (event) => cb(event.payload))
+}
+
+export function onGameLaunched(cb: (gameId: string) => void): Promise<UnlistenFn> {
+  return listen<string>("game-launched", (event) => cb(event.payload))
+}
+
+export function onGameStopped(cb: (gameId: string) => void): Promise<UnlistenFn> {
+  return listen<string>("game-stopped", (event) => cb(event.payload))
 }

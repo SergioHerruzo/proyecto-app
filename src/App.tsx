@@ -8,7 +8,8 @@ import Cart from "./components/Cart"
 import Profile from "./components/Profile"
 import AuthModal from "./components/AuthModal"
 import GameDetail from "./components/GameDetail"
-import DownloadsPanel from "./components/DownloadsPanel"
+import DownloadsBottomBar from "./components/DownloadsBottomBar"
+import DownloadsPage from "./components/DownloadsPage"
 import { DownloadProvider, useDownloads } from "./context/DownloadContext"
 import type { Game } from "./types/games"
 import {
@@ -33,7 +34,7 @@ import { restoreSession, logout } from "./services/auth"
 import type { AuthUser } from "./services/auth"
 import { isTauri } from "./utils/platform"
 
-type Page = "home" | "library" | "cart" | "profile" | "search"
+type Page = "home" | "library" | "cart" | "profile" | "search" | "downloads"
 type Theme = "dark" | "light"
 
 // AppContent is always inside DownloadProvider so useDownloads() is safe here
@@ -50,7 +51,6 @@ function AppContent({
   const [authMode, setAuthMode] = useState<"signin" | "register">("signin")
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
   const [theme, setTheme] = useState<Theme>("dark")
-  const [showDownloads, setShowDownloads] = useState(false)
 
   const [ownedGameIds, setOwnedGameIds] = useState<Set<string>>(new Set())
 
@@ -250,7 +250,7 @@ function AppContent({
         onToggleTheme={toggleTheme}
         isDesktop={isTauri}
         activeDownloads={activeDownloads}
-        onToggleDownloads={() => setShowDownloads((v) => !v)}
+        onToggleDownloads={() => setCurrentPage("downloads")}
       />
 
       {authModalOpen && !authUser && (
@@ -260,10 +260,6 @@ function AppContent({
           onSwitchMode={setAuthMode}
           onAuthSuccess={handleAuthSuccess}
         />
-      )}
-
-      {isTauri && showDownloads && (
-        <DownloadsPanel onClose={() => setShowDownloads(false)} />
       )}
 
       {selectedGame ? (
@@ -369,6 +365,9 @@ function AppContent({
             </>
           )}
           {currentPage === "library" && <Library />}
+          {currentPage === "downloads" && (
+            <DownloadsPage onBack={() => setCurrentPage("home")} />
+          )}
           {currentPage === "profile" && <Profile authUser={authUser} />}
           {currentPage === "cart" && (
             <div className="home-page">
@@ -381,6 +380,9 @@ function AppContent({
             </div>
           )}
         </>
+      )}
+      {isTauri && (
+        <DownloadsBottomBar onNavigateToDownloads={() => setCurrentPage("downloads")} />
       )}
     </>
   )

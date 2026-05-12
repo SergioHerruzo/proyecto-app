@@ -452,6 +452,34 @@
   border-color: #34d399;
 }
 
+.lgd-build-badge--downloading {
+  color: #a78bfa;
+  border-color: #a78bfa;
+}
+
+.lgd-build-install-btn {
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--border-3);
+  color: var(--text-4);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.lgd-build-install-btn:hover:not(:disabled) {
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
+
+.lgd-build-install-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* ===== INSTALL BUTTON ===== */
 .lgd-main-btn--install {
   background-color: #a78bfa;
@@ -471,26 +499,28 @@
   cursor: default;
 }
 
-/* ===== DOWNLOAD PROGRESS IN ACTION BAR ===== */
-.lgd-download-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-  max-width: 340px;
-}
 
-.lgd-download-info {
+/* ===== DOWNLOAD COMPACT (no progress bar) ===== */
+.lgd-download-compact {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .lgd-download-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-3);
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.lgd-download-pct {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-2, #e0e0e0);
+  white-space: nowrap;
 }
 
 .lgd-download-bytes {
@@ -499,27 +529,191 @@
   white-space: nowrap;
 }
 
-.lgd-download-bar-track {
-  width: 100%;
-  height: 4px;
-  background: var(--border-1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.lgd-download-bar-fill {
-  height: 100%;
-  background: #a78bfa;
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-/* ===== ACTION ERROR ===== */
-.lgd-action-error {
+.lgd-cancel-btn {
+  background: none;
+  border: 1px solid var(--border-2);
+  color: var(--text-4);
   font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-left: auto;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.lgd-cancel-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* ===== STOP BUTTON ===== */
+.lgd-main-btn--stop {
+  background-color: #ef4444;
+  color: #fff;
+}
+
+/* ===== MODALS ===== */
+.lgd-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.lgd-modal-backdrop--transparent {
+  background: transparent;
+}
+
+.lgd-modal {
+  background: var(--bg-raised, #0f0f20);
+  border: 1px solid var(--border-2, #1c1c38);
+  border-radius: 10px;
+  padding: 32px 28px;
+  min-width: 320px;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
+}
+
+.lgd-modal--error {
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.lgd-modal--confirm {
+  border-color: rgba(250, 204, 21, 0.25);
+}
+
+.lgd-modal-icon {
+  font-size: 2rem;
   color: #f87171;
-  max-width: 280px;
+}
+
+.lgd-modal-icon--warn {
+  color: #facc15;
+}
+
+.lgd-modal-confirm-btn {
+  padding: 8px 20px;
+  background: #a78bfa;
+  border: none;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.lgd-modal-confirm-btn:hover {
+  filter: brightness(1.1);
+}
+
+.lgd-modal-message {
+  font-size: 14px;
+  color: var(--text-3, #ccc);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
   word-break: break-word;
+}
+
+.lgd-modal-close-btn {
+  padding: 8px 24px;
+  background: var(--bg-control, #181830);
+  border: 1px solid var(--border-3, #252550);
+  color: var(--text-3, #ccc);
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lgd-modal-close-btn:hover {
+  background: var(--bg-control-hover, #20203d);
+}
+
+/* Launch modal */
+.lgd-modal--launch {
+  gap: 16px;
+}
+
+.lgd-launch-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border-3, #252550);
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: lgd-spin 0.8s linear infinite;
+}
+
+@keyframes lgd-spin {
+  to { transform: rotate(360deg); }
+}
+
+.lgd-launch-running-dot {
+  width: 14px;
+  height: 14px;
+  background: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #34d399;
+}
+
+.lgd-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1, #fff);
+  margin: 0;
+  text-align: center;
+}
+
+.lgd-modal-sub {
+  font-size: 13px;
+  color: var(--text-5, #777);
+  margin: 0;
+  text-align: center;
+}
+
+.lgd-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.lgd-modal-kill-btn {
+  padding: 8px 20px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lgd-modal-kill-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.lgd-modal-dismiss-btn {
+  padding: 8px 20px;
+  background: var(--bg-control, #181830);
+  border: 1px solid var(--border-3, #252550);
+  color: var(--text-4, #aaa);
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lgd-modal-dismiss-btn:hover {
+  background: var(--bg-control-hover, #20203d);
 }
 
 /* ===== UNINSTALL ===== */

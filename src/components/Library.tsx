@@ -5,6 +5,7 @@ import CollectionsView from "./CollectionsView"
 import CollectionDetail from "./CollectionDetail"
 import LibraryGameDetail from "./LibraryGameDetail"
 import type { Game, Collection } from "../types/games"
+import { useDownloads } from "../context/DownloadContext"
 import {
   getUserLibrary,
   mapGameSummary,
@@ -24,7 +25,10 @@ export default function Library() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null)
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
+  const [openBuildsTab, setOpenBuildsTab] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+
+  const { installedGames, openInstallFolder, uninstallGame } = useDownloads()
 
   const loadCollections = useCallback(async () => {
     try {
@@ -49,6 +53,7 @@ export default function Library() {
 
   const handleSelectGame = (game: Game) => {
     setSelectedCollection(null)
+    setOpenBuildsTab(false)
     setSelectedGame(game)
   }
 
@@ -76,9 +81,7 @@ export default function Library() {
 
   const handleAddGameToCollection = async (collectionId: string, gameId: string) => {
     await addGameToCollection(collectionId, gameId)
-    // Refresh the collection list to update preview thumbnails
     loadCollections()
-    // If viewing that collection detail, refresh it
     if (selectedCollection?.id === collectionId) {
       try {
         const full = await getCollectionById(collectionId)
@@ -98,6 +101,28 @@ export default function Library() {
         : null
       )
     }
+  }
+
+  const handleContextOpenFolder = async (gameId: string) => {
+    try {
+      await openInstallFolder(gameId)
+    } catch (e) {
+      console.error("[Library] openInstallFolder:", e)
+    }
+  }
+
+  const handleContextUninstall = async (gameId: string) => {
+    try {
+      await uninstallGame(gameId)
+    } catch (e) {
+      console.error("[Library] uninstallGame:", e)
+    }
+  }
+
+  const handleContextManageBuilds = (game: Game) => {
+    setSelectedCollection(null)
+    setOpenBuildsTab(true)
+    setSelectedGame(game)
   }
 
   if (loading) {
@@ -135,11 +160,19 @@ export default function Library() {
         onSearch={setSearchQuery}
         onSelectGame={handleSelectGame}
         selectedGameId={selectedGame?.id}
+        installedGames={installedGames}
+        onOpenFolder={handleContextOpenFolder}
+        onUninstall={handleContextUninstall}
+        onManageBuilds={handleContextManageBuilds}
       />
 
       <main className="library-main">
         {selectedGame ? (
-          <LibraryGameDetail game={selectedGame} />
+          <LibraryGameDetail
+            key={selectedGame.id}
+            game={selectedGame}
+            initialTab={openBuildsTab ? "versiones" : undefined}
+          />
         ) : selectedCollection ? (
           <CollectionDetail
             collection={selectedCollection}
