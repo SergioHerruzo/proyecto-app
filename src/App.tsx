@@ -25,7 +25,7 @@ import {
   getCart,
   addToCart,
   removeFromCart,
-  checkoutCart,
+  createCheckoutSession,
   getUserLibrary,
   getGameBuildsAsUser,
   getGameBuildById,
@@ -62,6 +62,8 @@ function AppContent({
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [libraryInitialGameId, setLibraryInitialGameId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const [paymentModal, setPaymentModal] = useState<"success" | "failed" | null>(null)
 
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<Game[] | null>(null)
@@ -146,6 +148,8 @@ function AppContent({
 
   // Restore session on mount
   useEffect(() => {
+    const paymentParam = new URLSearchParams(window.location.search).get("payment")
+
     restoreSession().then(async (user) => {
       if (user) {
         setAuthToken(user.accessToken)
@@ -157,6 +161,18 @@ function AppContent({
 
         await loadCurrentUserId()
         await checkAndAutoUpdate(summaries)
+      }
+
+      if (paymentParam) {
+        window.history.replaceState({}, "", window.location.pathname)
+        if (paymentParam === "success") {
+          setCartItems([])
+          setCurrentPage("home")
+          setPaymentModal("success")
+        } else if (paymentParam === "cancelled") {
+          setCurrentPage("cart")
+          setPaymentModal("failed")
+        }
       }
     })
   }, [])
@@ -312,13 +328,10 @@ function AppContent({
   }
 
   const handleCheckout = async () => {
-    await checkoutCart()
-
-    setCartItems([])
-
-    await loadLibraryIds()
-
-    setCurrentPage(isTauri ? "library" : "home")
+    const successUrl = `${window.location.origin}/?payment=success`
+    const cancelUrl = `${window.location.origin}/?payment=cancelled`
+    const { sessionUrl } = await createCheckoutSession(successUrl, cancelUrl)
+    window.location.href = sessionUrl
   }
 
   const handleNavigate = (page: Page) => {
@@ -364,6 +377,60 @@ function AppContent({
         activeDownloads={activeDownloads}
         onToggleDownloads={() => setCurrentPage("downloads")}
       />
+
+      {paymentModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 2000,
+          background: "rgba(0,0,0,0.75)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <div style={{
+            background: "var(--bg-item, #1e1e2e)",
+            borderRadius: "14px",
+            padding: "2.5rem 2rem",
+            maxWidth: "380px",
+            width: "90%",
+            textAlign: "center",
+            boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
+          }}>
+            <div style={{
+              fontSize: "3.5rem",
+              marginBottom: "0.75rem",
+              color: paymentModal === "success" ? "#16a34a" : "#dc2626",
+            }}>
+              {paymentModal === "success" ? "✓" : "✗"}
+            </div>
+            <h2 style={{
+              margin: "0 0 0.75rem",
+              color: paymentModal === "success" ? "#16a34a" : "#dc2626",
+              fontSize: "1.3rem",
+            }}>
+              {paymentModal === "success" ? "¡Pago completado!" : "Pago fallido"}
+            </h2>
+            <p style={{ color: "var(--text-2, #aaa)", margin: "0 0 1.75rem", lineHeight: 1.5 }}>
+              {paymentModal === "success"
+                ? "El pago ha sido completado con éxito. ¡Los juegos ya están en tu biblioteca!"
+                : "El pago ha fallado. Tu carrito sigue disponible para intentarlo de nuevo."}
+            </p>
+            <button
+              onClick={() => setPaymentModal(null)}
+              style={{
+                background: paymentModal === "success" ? "#16a34a" : "#dc2626",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                padding: "0.75rem 2rem",
+                fontSize: "1rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                width: "100%",
+              }}
+            >
+              {paymentModal === "success" ? "Ver la tienda" : "Volver al carrito"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {authModalOpen && !authUser && (
         <AuthModal
