@@ -46,7 +46,7 @@ struct PreviewManifest {
 #[tauri::command]
 pub async fn get_build_preview(
     manifest_url: String,
-    auth_token: String,
+    _auth_token: String,
 ) -> Result<BuildPreview, String> {
     let client = reqwest::Client::new();
     // Manifest URL is a pre-signed storage URL — no Bearer token needed
