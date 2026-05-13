@@ -40,19 +40,17 @@
 }
 
 .hero-image {
-  width: 340px;
-  height: 160px;
+  flex: 1;
+  height: 220px;
   border-radius: 8px;
   background-color: #0d1a3d;
   background-size: cover;
   background-position: center;
-  flex-shrink: 0;
 }
 
 @media (max-width: 900px) {
   .hero-image {
-    width: 240px;
-    height: 130px;
+    height: 170px;
   }
 }
 

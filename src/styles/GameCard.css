@@ -7,14 +7,14 @@
 
 .game-card-image {
   width: 100%;
-  height: 110px;
+  height: 150px;
   background-color: var(--bg-control);
   position: relative;
   overflow: hidden;
 }
 
 .game-card--recommended .game-card-image {
-  height: 130px;
+  height: 170px;
 }
 
 .game-card-image-bg {

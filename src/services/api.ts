@@ -1,4 +1,4 @@
-let BASE_URL = "https://789uf7y9wj.execute-api.us-east-1.amazonaws.com/dev"
+let BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 
 export function configure(baseUrl: string) {
   BASE_URL = baseUrl

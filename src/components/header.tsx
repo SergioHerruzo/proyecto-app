@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Sun, Moon } from 'lucide-react'
 import '../styles/Header.css'
+import logoImg from '../img/logo_indie_games.jpg'
 
 type Page = "home" | "library" | "cart" | "profile"
 type Theme = "dark" | "light"
@@ -51,9 +52,10 @@ export default function Header({
   return (
     <header className="header">
       <div className="logo-badge">
-        <span style={{ color: "var(--text-1)", fontWeight: "bold", fontSize: "1.3rem", letterSpacing: "0.02em" }}>
-          Indie Games
-        </span>
+        <div className="logo-circle">
+          <img src={logoImg} alt="Indie Games" />
+        </div>
+        <span className="logo-text">Indie Games</span>
       </div>
 
       <nav className="nav">
@@ -99,7 +101,7 @@ export default function Header({
         {!isDesktop && (
           <a
             className="btn-download"
-            href="/indie-games-desktop.zip"
+            href={import.meta.env.VITE_DOWNLOAD_URL}
             download
             title="Descargar aplicación de escritorio"
           >
