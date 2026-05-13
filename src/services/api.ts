@@ -1,4 +1,4 @@
-let BASE_URL = "http://localhost:5239"
+let BASE_URL = "https://789uf7y9wj.execute-api.us-east-1.amazonaws.com/dev"
 
 export function configure(baseUrl: string) {
   BASE_URL = baseUrl
@@ -276,6 +276,23 @@ export async function checkoutCart(): Promise<void> {
   const body = await res.text().catch(() => "")
   console.log(`[API] POST /users/me/cart/checkout → ${res.status}`, body)
   if (!res.ok) throw new Error(`Error ${res.status}`)
+}
+
+export interface CreateCheckoutSessionResponse {
+  sessionUrl: string
+}
+
+export async function createCheckoutSession(
+  successUrl: string,
+  cancelUrl: string,
+): Promise<CreateCheckoutSessionResponse> {
+  const res = await fetch(`${BASE_URL}/payments/checkout`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ successUrl, cancelUrl }),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  return res.json()
 }
 
 export async function getUserLibrary(): Promise<GameSummary[]> {
