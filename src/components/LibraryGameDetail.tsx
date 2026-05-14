@@ -493,9 +493,9 @@ export default function LibraryGameDetail({ game, initialTab, onBack }: LibraryG
                         }`}
                     >
                       <div className="lgd-achievement-icon">
-                        {unlocked
-                          ? <Trophy size={20} />
-                          : <Lock size={20} />}
+                        {a.smallPictureUrl
+                          ? <img src={a.smallPictureUrl} alt={a.name} style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 4, filter: unlocked ? "none" : "grayscale(100%) opacity(0.4)" }} />
+                          : unlocked ? <Trophy size={20} /> : <Lock size={20} />}
                       </div>
 
                       <div className="lgd-achievement-info">

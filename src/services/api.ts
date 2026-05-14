@@ -409,10 +409,11 @@ export interface AchievementResponse {
   gameId: string
   name: string
   description: string
+  smallPictureUrl?: string
+  mediumPictureUrl?: string
+  largePictureUrl?: string
   isUnlocked?: boolean
   unlockedAt?: string
-  createdAt?: string
-  updatedAt?: string
 }
 
 export async function getGameAchievements(
