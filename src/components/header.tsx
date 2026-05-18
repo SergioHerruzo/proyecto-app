@@ -3,7 +3,7 @@ import { Sun, Moon } from 'lucide-react'
 import '../styles/Header.css'
 import logoImg from '../img/logo_indie_games.jpg'
 
-type Page = "home" | "library" | "cart" | "profile"
+type Page = "home" | "library" | "cart" | "profile" | "downloads"
 type Theme = "dark" | "light"
 
 interface HeaderProps {

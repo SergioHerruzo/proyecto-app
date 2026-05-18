@@ -72,11 +72,8 @@ function AppContent({
   const [selectedGenres, setSelectedGenres] = useState<string[]>([])
 
   // These are no-ops on web (isTauri guards are inside the provider)
-  const { downloads, installedGames, startDownload, refreshInstalled } = useDownloads()
+  const { installedGames, startDownload, refreshInstalled } = useDownloads()
 
-  const activeDownloads = Object.values(downloads).filter(
-    (d) => d.status === "downloading" || d.status === "queued",
-  ).length
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme)
