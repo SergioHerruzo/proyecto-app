@@ -80,7 +80,7 @@ export default function CollectionDetail({ collection, onBack, onSelectGame, onA
               <div className="game-cover-image-wrapper">
                 <div
                   className="game-cover-image"
-                  style={{ backgroundImage: `url(${game.image})` }}
+                  style={{ backgroundImage: `url(${game.mainImage ?? game.image})` }}
                 />
                 <button
                   className={`game-cover-remove-btn ${removingId === game.id ? "game-cover-remove-btn--loading" : ""}`}

@@ -8,6 +8,8 @@ export interface Game {
   genres: string[]
   image: string
   icon?: string
+  mainImage?: string
+  headerImage?: string
   developer?: string
   releaseDate?: string
   tags?: string[]

@@ -324,7 +324,7 @@ export default function LibraryGameDetail({ game, initialTab, onBack }: LibraryG
     <div className="lgd-wrapper">
 
       {/* Hero */}
-      <div className="lgd-hero" style={{ backgroundImage: `url(${game.image})` }}>
+      <div className="lgd-hero" style={{ backgroundImage: `url(${game.headerImage ?? game.image})` }}>
         <div className="lgd-hero-overlay">
           {onBack && (
             <button className="lgd-back-btn" onClick={onBack}>

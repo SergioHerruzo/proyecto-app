@@ -137,6 +137,8 @@ function findArtwork(artworks: GameArtworkSummary[], type: string) {
 
 export function mapApiGameListItem(item: GameListItemResponse): Game {
   const capsule = findArtwork(item.artworks ?? [], 'Capsule')
+  const header = findArtwork(item.artworks ?? [], 'Header')
+  const main = findArtwork(item.artworks ?? [], 'Main')
   const hasDiscount = item.discount > 0
   return {
     id: item.id,
@@ -148,11 +150,15 @@ export function mapApiGameListItem(item: GameListItemResponse): Game {
     image: capsule?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(item.title)}`,
     icon: capsule?.smallImageUrl,
+    headerImage: header?.largeImageUrl,
+    mainImage: main?.mediumImageUrl,
   }
 }
 
 export function mapApiGame(game: GameResponse): Game {
   const capsule = findArtwork(game.artworks ?? [], 'Capsule')
+  const header = findArtwork(game.artworks ?? [], 'Header')
+  const main = findArtwork(game.artworks ?? [], 'Main')
   const hasDiscount = game.discount > 0
 
   return {
@@ -167,6 +173,8 @@ export function mapApiGame(game: GameResponse): Game {
     image: capsule?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(game.title)}`,
     icon: capsule?.smallImageUrl,
+    headerImage: header?.largeImageUrl,
+    mainImage: main?.mediumImageUrl,
     screenshots: game.storePictures?.length > 0
       ? game.storePictures.map(p => p.largeImageUrl)
       : undefined,
@@ -175,6 +183,8 @@ export function mapApiGame(game: GameResponse): Game {
 
 export function mapGameSummary(g: GameSummary): Game {
   const capsule = findArtwork(g.artworks ?? [], 'Capsule')
+  const header = findArtwork(g.artworks ?? [], 'Header')
+  const main = findArtwork(g.artworks ?? [], 'Main')
   return {
     id: g.id,
     title: g.title,
@@ -183,6 +193,8 @@ export function mapGameSummary(g: GameSummary): Game {
     image: capsule?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(g.title)}`,
     icon: capsule?.smallImageUrl,
+    headerImage: header?.largeImageUrl,
+    mainImage: main?.mediumImageUrl,
     screenshots: g.storePictures?.length > 0
       ? g.storePictures.map(p => p.largeImageUrl)
       : undefined,

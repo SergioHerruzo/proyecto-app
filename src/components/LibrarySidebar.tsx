@@ -99,7 +99,7 @@ export default function LibrarySidebar({
           >
             <div
               className="sidebar-game-thumb"
-              style={{ backgroundImage: `url(${game.icon ?? game.image})` }}
+              style={{ backgroundImage: `url(${game.mainImage ?? game.icon ?? game.image})` }}
             />
             <span className="sidebar-game-title">{game.title}</span>
           </li>
