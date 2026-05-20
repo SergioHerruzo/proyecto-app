@@ -383,7 +383,7 @@ export async function getCollectionById(collectionId: string): Promise<Collectio
     id: data.id,
     name: data.name,
     games,
-    previewUrls: games.slice(0, 4).map(g => g.image).filter(Boolean),
+    previewUrls: games.slice(0, 4).map(g => g.mainImage ?? g.image).filter(Boolean),
   }
 }
 

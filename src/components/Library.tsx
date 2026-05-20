@@ -30,14 +30,13 @@ async function enrichCollections(
 ): Promise<Collection[]> {
   return Promise.all(
     list.map(async (col) => {
-      if (col.previewUrls?.some(u => u)) return col
       try {
         const full = await getCollectionById(col.id)
         const previews = full.games
           .slice(0, 4)
           .map(g => {
             const owned = gameById.get(g.id)
-            return g.image || owned?.icon || owned?.image || ''
+            return g.mainImage || owned?.mainImage || g.image || owned?.image || ''
           })
           .filter(Boolean)
         return { ...col, previewUrls: previews }
