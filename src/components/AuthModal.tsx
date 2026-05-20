@@ -139,7 +139,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
     }
     setLoading(true)
     try {
-      await confirmRegister(username, confirmCode)
+      await confirmRegister(email, confirmCode)
       resetFields()
       onSwitchMode("signin")
     } catch (err: unknown) {
@@ -160,7 +160,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
     setError(null)
     setResendCooldown(true)
     try {
-      await resendConfirmationCode(username)
+      await resendConfirmationCode(email)
     } catch {
       setError("No se pudo reenviar el código. Inténtalo más tarde.")
     }
@@ -235,7 +235,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
                 className="auth-input"
                 placeholder="nombre_usuario"
                 value={username}
-                onChange={e => { setUsername(e.target.value); setError(null) }}
+                onChange={e => { setUsername(e.target.value.replace(/\s/g, "")); setError(null) }}
                 onKeyDown={e => e.key === "Enter" && handleSubmit()}
                 disabled={loading}
               />

@@ -7,8 +7,8 @@ import {
 } from "amazon-cognito-identity-js"
 
 const userPool = new CognitoUserPool({
-  UserPoolId: "us-east-1_stp4k9vnj",
-  ClientId: "2skv4dat4fj2agiufujhgtkhgt",
+  UserPoolId: "us-east-1_QcUGOhJYI",
+  ClientId: "7vjudsjeu488764orqv7oka5af",
 })
 
 export interface AuthUser {
@@ -47,9 +47,10 @@ export function register(username: string, email: string, password: string): Pro
   return new Promise((resolve, reject) => {
     const attributes = [
       new CognitoUserAttribute({ Name: "email", Value: email }),
+      new CognitoUserAttribute({ Name: "preferred_username", Value: username }),
     ]
 
-    userPool.signUp(username, password, attributes, [], (err) => {
+    userPool.signUp(email, password, attributes, [], (err) => {
       if (err) reject(err)
       else resolve()
     })
