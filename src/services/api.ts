@@ -49,6 +49,7 @@ export interface GenreSummary {
 }
 
 export interface GameArtworkSummary {
+  type: string
   smallImageUrl: string
   mediumImageUrl: string
   largeImageUrl: string
@@ -130,8 +131,12 @@ export interface UpdateGameRequest {
 
 import type { Game } from "../types/games"
 
+function findArtwork(artworks: GameArtworkSummary[], type: string) {
+  return artworks.find(a => a.type === type)
+}
+
 export function mapApiGameListItem(item: GameListItemResponse): Game {
-  const artwork = item.artworks?.[0]
+  const capsule = findArtwork(item.artworks ?? [], 'Capsule')
   const hasDiscount = item.discount > 0
   return {
     id: item.id,
@@ -140,15 +145,14 @@ export function mapApiGameListItem(item: GameListItemResponse): Game {
     discount: hasDiscount ? item.discount : undefined,
     oldPrice: hasDiscount ? item.price : undefined,
     genres: [],
-    image: artwork?.mediumImageUrl
+    image: capsule?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(item.title)}`,
-    icon: artwork?.smallImageUrl,
+    icon: capsule?.smallImageUrl,
   }
 }
 
 export function mapApiGame(game: GameResponse): Game {
-  const storePic = game.storePictures?.[0]
-  const artworks = game.artworks ?? []
+  const capsule = findArtwork(game.artworks ?? [], 'Capsule')
   const hasDiscount = game.discount > 0
 
   return {
@@ -160,25 +164,28 @@ export function mapApiGame(game: GameResponse): Game {
     oldPrice: hasDiscount ? game.price : undefined,
     genres: game.genres?.map(g => g.name) ?? [],
     developer: game.owner?.username,
-    image: storePic?.mediumImageUrl
+    image: capsule?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(game.title)}`,
-    icon: artworks[0]?.smallImageUrl,
-    screenshots: artworks.length > 0 ? artworks.map(a => a.largeImageUrl) : undefined,
+    icon: capsule?.smallImageUrl,
+    screenshots: game.storePictures?.length > 0
+      ? game.storePictures.map(p => p.largeImageUrl)
+      : undefined,
   }
 }
 
 export function mapGameSummary(g: GameSummary): Game {
-  const storePic = g.storePictures?.[0]
-  const artworks = g.artworks ?? []
+  const capsule = findArtwork(g.artworks ?? [], 'Capsule')
   return {
     id: g.id,
     title: g.title,
     description: g.description,
     genres: g.genres?.map(x => x.name) ?? [],
-    image: storePic?.mediumImageUrl
+    image: capsule?.mediumImageUrl
       ?? `https://placehold.co/400x220/2a2a2a/555?text=${encodeURIComponent(g.title)}`,
-    icon: artworks[0]?.smallImageUrl,
-    screenshots: artworks.length > 0 ? artworks.map(a => a.largeImageUrl) : undefined,
+    icon: capsule?.smallImageUrl,
+    screenshots: g.storePictures?.length > 0
+      ? g.storePictures.map(p => p.largeImageUrl)
+      : undefined,
   }
 }
 
