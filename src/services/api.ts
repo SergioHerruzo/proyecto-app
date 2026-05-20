@@ -1,4 +1,4 @@
-let BASE_URL = import.meta.env.VITE_API_BASE_URL as string
+let BASE_URL = import.meta.env.VITE_URL_API as string
 
 export function configure(baseUrl: string) {
   BASE_URL = baseUrl
