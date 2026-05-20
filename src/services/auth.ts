@@ -50,7 +50,7 @@ export function register(username: string, email: string, password: string): Pro
       new CognitoUserAttribute({ Name: "preferred_username", Value: username }),
     ]
 
-    userPool.signUp(email, password, attributes, [], (err) => {
+    userPool.signUp(username, password, attributes, [], (err) => {
       if (err) reject(err)
       else resolve()
     })

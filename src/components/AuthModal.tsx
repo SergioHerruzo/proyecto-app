@@ -139,7 +139,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
     }
     setLoading(true)
     try {
-      await confirmRegister(email, confirmCode)
+      await confirmRegister(username, confirmCode)
       resetFields()
       onSwitchMode("signin")
     } catch (err: unknown) {
@@ -160,7 +160,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode, onAuthSuccess }
     setError(null)
     setResendCooldown(true)
     try {
-      await resendConfirmationCode(email)
+      await resendConfirmationCode(username)
     } catch {
       setError("No se pudo reenviar el código. Inténtalo más tarde.")
     }
