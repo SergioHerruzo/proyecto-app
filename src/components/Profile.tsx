@@ -172,7 +172,8 @@ export default function Profile({ authUser, onNavigateToLibrary }: ProfileProps)
           {!loadingGames && recentGames.length > 0 && (
             <div className="profile-recent-games">
               {recentGames.map(g => {
-                const img = g.artworks?.[0]?.smallImageUrl ?? g.storePictures?.[0]?.smallImageUrl ?? ""
+                const capsule = g.artworks?.find(a => a.type === 'Capsule')
+                const img = capsule?.mediumImageUrl ?? g.artworks?.[0]?.mediumImageUrl ?? ""
                 return (
                   <div key={g.id} className="profile-recent-game">
                     <div

@@ -38,7 +38,7 @@ export default function HeroGame({ game, ownedGameIds, onAddToCart, onSelectGame
 
         <div
           className="hero-image"
-          style={{ backgroundImage: `url(${game.image})` }}
+          style={{ backgroundImage: `url(${game.headerImage ?? game.image})` }}
         />
       </div>
     </section>
